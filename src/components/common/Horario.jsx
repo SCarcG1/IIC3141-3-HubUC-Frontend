@@ -38,42 +38,42 @@ export default function Horario() {
 
   // clases que ya han sido agendadas
   const [clases] = useState([
-    {
-      id: 1,
-      dia: "Lunes",
-      horaInicio: "08:20",
-      duracionBloques: 2,
-      titulo: "Matemáticas",
-      tutor: "Nombre tutor",
-      estudiante: "Nombre estudiante",
-    },
-    {
-      id: 2,
-      dia: "Martes",
-      horaInicio: "11:00",
-      duracionBloques: 1,
-      titulo: "Cálculo I",
-      tutor: "Nombre tutor",
-      estudiante: "Nombre estudiante",
-    },
-    {
-      id: 3,
-      dia: "Jueves",
-      horaInicio: "12:20",
-      duracionBloques: 1,
-      titulo: "Cálculo II",
-      tutor: "Nombre tutor",
-      estudiante: "Nombre estudiante",
-    },
-    {
-      id: 3,
-      dia: "Lunes",
-      horaInicio: "12:20",
-      duracionBloques: 1,
-      titulo: "Álgebra Lineal",
-      tutor: "Nombre tutor",
-      estudiante: "Nombre estudiante",
-    },
+    // {
+    //   id: 1,
+    //   dia: "Lunes",
+    //   horaInicio: "08:20",
+    //   duracionBloques: 2,
+    //   titulo: "Matemáticas",
+    //   tutor: "Nombre tutor",
+    //   estudiante: "Nombre estudiante",
+    // },
+    // {
+    //   id: 2,
+    //   dia: "Martes",
+    //   horaInicio: "11:00",
+    //   duracionBloques: 1,
+    //   titulo: "Cálculo I",
+    //   tutor: "Nombre tutor",
+    //   estudiante: "Nombre estudiante",
+    // },
+    // {
+    //   id: 3,
+    //   dia: "Jueves",
+    //   horaInicio: "12:20",
+    //   duracionBloques: 1,
+    //   titulo: "Cálculo II",
+    //   tutor: "Nombre tutor",
+    //   estudiante: "Nombre estudiante",
+    // },
+    // {
+    //   id: 3,
+    //   dia: "Lunes",
+    //   horaInicio: "12:20",
+    //   duracionBloques: 1,
+    //   titulo: "Álgebra Lineal",
+    //   tutor: "Nombre tutor",
+    //   estudiante: "Nombre estudiante",
+    // },
   ]);
 
   // Para controlar qué celdas se deben omitir (ocupadas por rowspan)

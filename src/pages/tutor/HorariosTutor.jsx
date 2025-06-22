@@ -20,6 +20,23 @@ export default function Horarios() {
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este bloque?")) return;
+
+    try {
+      await api.delete(`/weekly-timeblocks/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Elimina de la lista localmente sin recargar toda la página:
+      setHorarios(horarios.filter((h) => h.id !== id));
+    } catch (err) {
+      console.error("Error al eliminar bloque:", err);
+      alert("Ocurrió un error al eliminar el bloque.");
+    }
+  };
+
   useEffect(() => {
     const fetchHorarios = async () => {
       try {
@@ -71,14 +88,14 @@ export default function Horarios() {
               className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
             >
               <div className="font-semibold text-lg">
-                {diasSemana[h.weekday] || h.weekday} de {h.start_hour}:00 a {h.end_hour}:00
+                {diasSemana[h.weekday] || h.weekday} de {h.start_hour} a {h.end_hour}
               </div>
               <div className="text-sm text-neutral-400">
                 Vigente desde {new Date(h.valid_from).toLocaleDateString()} hasta{' '}
                 {new Date(h.valid_until).toLocaleDateString()}
               </div>
               <div className="mt-2 flex gap-2">
-                <button className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded text-sm">
+                <button onClick={() => handleDelete(h.id)} className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded text-sm">
                   Eliminar
                 </button>
               </div>
