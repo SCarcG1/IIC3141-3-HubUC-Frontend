@@ -5,92 +5,92 @@ import api from "../../services/api";
 
 export default function AlumnoDashboard() {
   const [solicitudes, setSolicitudes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  console.log(solicitudes);
+  const [clases, setClases] = useState([]);
 
-  // datos hardcodeados
-  const resumen = {
-    clasesHoy: 1,
-    proximaClase: "Álgebra Lineal - 12:20 hrs",
-  };
+  const now = new Date();
+  const clasesHoy = clases.filter((r) => {
+    const localStart = new Date(new Date(r.start_time).toLocaleString("en-US", { timeZone: "America/Santiago" }));
+    return r.status === "accepted" &&
+      localStart.getDate() === now.getDate() &&
+      localStart.getMonth() === now.getMonth() &&
+      localStart.getFullYear() === now.getFullYear();
+  });
+
+  const proximaClase = clases
+    .filter((r) => r.status === "accepted" && new Date(r.start_time) > now)
+    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0];
 
   useEffect(() => {
-    const fetchSolicitudes = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await api.get("/reservations/student", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res1 = await api.get("/reservations/student", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setSolicitudes(res.data);
+        setSolicitudes(res1.data);
+        setClases(res1.data);
       } catch (error) {
-        console.error("Error al obtener solicitudes:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error:", error);
       }
     };
-
-    fetchSolicitudes();
+    fetchData();
   }, []);
 
   return (
     <div className="bg-neutral-950 min-h-screen text-white p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Panel Principal</h1>
+        <h1 className="text-2xl font-bold">Horario De Esta Semana</h1>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className="flex-1 overflow-x-auto">
-          <div className="flex-1 overflow-x-auto">
-            <Horario />
-          </div>
+        <div className="flex-1">
+          <Horario />
         </div>
 
         <div className="w-full lg:w-80 flex flex-col gap-4">
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Buscar clases</h2>
-            <div className="flex gap-4">
-              <Link
-                to="/clases"
-                className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
-              >
-                Ver clases
-              </Link>
-            </div>
+            <Link
+              to="/clases"
+              className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
+            >
+              Ver clases
+            </Link>
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Clases de hoy</h2>
-            <p className="text-xl mb-4">{resumen.clasesHoy}</p>
+            <p className="text-xl mb-4">{clasesHoy.length}</p>
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Próxima clase</h2>
-            <p className="text-m mb-4">{resumen.proximaClase}</p>
+            {proximaClase ? (
+              <p>
+                {proximaClase.private_lesson?.course?.name} -{" "}
+                {new Date(proximaClase.start_time).toLocaleTimeString("es-CL", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            ) : (
+              <p className="text-neutral-400">Sin próximas clases</p>
+            )}
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">
               Solicitudes pendientes
             </h2>
-            {loading ? (
-              <p className="mt-6 text-neutral-300">Cargando solicitudes...</p>
-            ) : solicitudes.length === 0 ? (
-              <p className="mt-6 text-neutral-400">No hay solicitudes aún.</p>
-            ) : (
-              <div>
-                <p className="text-xl mb-4">
-                  {solicitudes.filter((s) => s.status === "pending").length}
-                </p>
-                <Link
-                  to="/solicitudes/alumno"
-                  className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
-                >
-                  Ver solicitudes
-                </Link>
-              </div>
-            )}
+            <p className="text-xl mb-4">
+              {solicitudes.filter((s) => s.status === "pending").length}
+            </p>
+            <Link
+              to="/solicitudes/alumno"
+              className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
+            >
+              Ver solicitudes
+            </Link>
           </div>
         </div>
       </div>
