@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../services/api";
-import Reservacion from "./Reservacion";
+import SolicitarClase from "./SolicitarClase";
 
 export default function Clases({ initialLessons = null }) {
   const navigate = useNavigate();
@@ -24,25 +24,11 @@ export default function Clases({ initialLessons = null }) {
     setShowForm(true);
   };
 
-  const handleConfirmarSolicitud = async (lessonId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `/reservations/lesson/${lessonId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      alert("Clase solicitada exitosamente");
-      setShowForm(false);
-    } catch (e) {
-      console.error("Error al solicitar clase:", e);
-      alert("Hubo un error al solicitar la clase.");
-    }
-  };
+const handleConfirmarSolicitud = () => {
+  alert("Clase solicitada exitosamente");
+  setShowForm(false);
+};
+
 
   const handleChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -182,14 +168,6 @@ export default function Clases({ initialLessons = null }) {
                     <div className="text-sm text-neutral-400">
                       Precio: ${lesson.price}
                     </div>
-                    <div className="text-sm text-neutral-400">
-                      Fecha:{" "}
-                      {new Date(lesson.start_time).toLocaleString("es-CL", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                        timeZone: "America/Santiago",
-                      })}
-                    </div>
                   </div>
 
                   <div className="flex flex-col items-end space-y-2">
@@ -215,12 +193,12 @@ export default function Clases({ initialLessons = null }) {
         </div>
       )}
       {showForm && selectedLesson && (
-        <Reservacion
-          lesson={selectedLesson}
-          courseCache={courseCache}
-          onClose={() => setShowForm(false)}
-          onSubmit={handleConfirmarSolicitud}
-        />
+      <SolicitarClase
+        lesson={selectedLesson}
+        courseCache={courseCache}
+        onClose={() => setShowForm(false)}
+        onSubmit={handleConfirmarSolicitud}
+      />
       )}
     </div>
   );

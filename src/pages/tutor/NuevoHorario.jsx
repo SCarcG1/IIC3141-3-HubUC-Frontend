@@ -2,15 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
-const WEEKDAYS = {
-  Lunes: 'Monday',
-  Martes: 'Tuesday',
-  Miércoles: 'Wednesday',
-  Jueves: 'Thursday',
-  Viernes: 'Friday',
-  Sábado: 'Saturday',
-  Domingo: 'Sunday',
-};
+const WEEKDAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const HORAS = [
   '08:20', '09:40', '11:00', '12:20',
@@ -18,56 +10,64 @@ const HORAS = [
   '18:50', '20:10',
 ];
 
+// Función para sumar 1h 10min a un string "HH:MM"
+const sumarHora = (horaStr) => {
+  const [h, m] = horaStr.split(':').map(Number);
+  const date = new Date(0, 0, 0, h, m + 70); // + 70 min
+  const hh = date.getHours().toString().padStart(2, '0');
+  const mm = date.getMinutes().toString().padStart(2, '0');
+  return `${hh}:${mm}`;
+};
+
 export default function CrearHorario() {
   const navigate = useNavigate();
-  const [weekday, setWeekday] = useState('Lunes');
-  const [start, setStart] = useState(8);
-  const [end, setEnd] = useState(9);
-  const [blocks, setBlocks] = useState([]);
+  const [selectedBlocks, setSelectedBlocks] = useState([]); // [{weekday, hora}]
   const [validFrom, setValidFrom] = useState('');
   const [validUntil, setValidUntil] = useState('');
 
-  const handleAddBlock = () => {
-    if (start >= end) {
-      return alert('La hora de inicio debe ser menor que la de término');
+  const toggleBlock = (day, hora) => {
+    const exists = selectedBlocks.find(
+      (b) => b.weekday === day && b.hora === hora
+    );
+    if (exists) {
+      setSelectedBlocks(selectedBlocks.filter(
+        (b) => !(b.weekday === day && b.hora === hora)
+      ));
+    } else {
+      setSelectedBlocks([...selectedBlocks, { weekday: day, hora }]);
     }
-    setBlocks([
-      ...blocks,
-      { weekday, start_hour: start, end_hour: end },
-    ]);
-  };
-
-  const handleRemoveBlock = (index) => {
-    const newBlocks = [...blocks];
-    newBlocks.splice(index, 1);
-    setBlocks(newBlocks);
   };
 
   const handleSubmit = async (e) => {
-    const toNaiveDateTime = (dateStr) => {
-      return new Date(dateStr).toISOString().split('.')[0]; // Quita zona horaria y milisegundos
-    };
     e.preventDefault();
-
+    const toNaiveDateTime = (dateStr) => {
+      return new Date(dateStr).toISOString().split('.')[0];
+    };
     const valid_from_naive = toNaiveDateTime(validFrom);
     const valid_until_naive = toNaiveDateTime(validUntil);
     const token = localStorage.getItem('token');
 
     try {
-      for (const block of blocks) {
+      for (const b of selectedBlocks) {
         const payload = {
-          weekday: WEEKDAYS[block.weekday],
-          start_hour: block.start_hour,
-          end_hour: block.end_hour,
+          weekday: {
+            Lunes: 'Monday',
+            Martes: 'Tuesday',
+            Miércoles: 'Wednesday',
+            Jueves: 'Thursday',
+            Viernes: 'Friday',
+            Sábado: 'Saturday',
+            Domingo: 'Sunday',
+          }[b.weekday],
+          start_hour: `${b.hora}:00`,                    // HH:MM:00
+          end_hour: `${sumarHora(b.hora)}:00`,           // HH:MM + 1h10m
           valid_from: valid_from_naive,
           valid_until: valid_until_naive,
         };
-
         await api.post('/weekly-timeblocks', payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-
       navigate('/horarios');
     } catch (err) {
       console.error('Error al crear horarios:', err);
@@ -75,84 +75,50 @@ export default function CrearHorario() {
     }
   };
 
+  const isSelected = (day, hora) => {
+    return selectedBlocks.some(
+      (b) => b.weekday === day && b.hora === hora
+    );
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-8">
       <h1 className="text-2xl font-bold mb-6">Crear horarios disponibles</h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
-        <label className="flex flex-col">
-          Día de la semana:
-          <select
-            value={weekday}
-            onChange={(e) => setWeekday(e.target.value)}
-            className="bg-neutral-800 p-2 rounded mt-1"
-          >
-            {Object.keys(WEEKDAYS).map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col">
-          Bloque horario:
-          <div className="flex gap-2 mt-1">
-            <select
-              value={start}
-              onChange={(e) => setStart(Number(e.target.value))}
-              className="bg-neutral-800 p-2 rounded"
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <option key={i} value={i}>
-                  {i}:00
-                </option>
+      <div className="overflow-x-auto mb-6">
+        <table className="min-w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="border border-neutral-700 px-4 py-2">Hora</th>
+              {WEEKDAYS.map((day) => (
+                <th key={day} className="border border-neutral-700 px-4 py-2">{day}</th>
               ))}
-            </select>
-            <span className="self-center">a</span>
-            <select
-              value={end}
-              onChange={(e) => setEnd(Number(e.target.value))}
-              className="bg-neutral-800 p-2 rounded"
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <option key={i} value={i}>
-                  {i}:00
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={handleAddBlock}
-              className="bg-violet-600 hover:bg-violet-800 px-3 rounded"
-            >
-              + Agregar bloque
-            </button>
-          </div>
-        </label>
-
-        {blocks.length > 0 && (
-          <div className="bg-neutral-900 p-3 rounded text-sm text-neutral-300">
-            <p className="font-semibold mb-2">Bloques agregados:</p>
-            <ul className="list-disc list-inside flex flex-col gap-1">
-              {blocks.map((b, i) => (
-                <li key={i} className="flex justify-between items-center">
-                  <span>
-                    {b.weekday}: {b.start_hour}:00 - {b.end_hour}:00
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveBlock(i)}
-                    className="text-red-400 hover:text-red-600 text-xs ml-2"
+            </tr>
+          </thead>
+          <tbody>
+            {HORAS.map((hora) => (
+              <tr key={hora}>
+                <td className="border border-neutral-700 px-4 py-2 text-center">{hora}</td>
+                {WEEKDAYS.map((day) => (
+                  <td
+                    key={day}
+                    className={`border border-neutral-700 px-4 py-2 text-center cursor-pointer ${
+                      isSelected(day, hora)
+                        ? 'bg-violet-600'
+                        : 'hover:bg-neutral-800'
+                    }`}
+                    onClick={() => toggleBlock(day, hora)}
                   >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                    {isSelected(day, hora) ? '✓' : '-'}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
         <label className="flex flex-col">
           Vigente desde:
           <input
