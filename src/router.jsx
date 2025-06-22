@@ -14,9 +14,8 @@ import ClasesTutor from "./pages/tutor/ClasesTutor";
 import AlumnoSolicitudes from "./pages/alumno/AlumnoSolicitudes";
 import Horarios from "./pages/tutor/HorariosTutor";
 import NuevoHorario from "./pages/tutor/NuevoHorario";
-import MisClases from "./pages/tutor/MisClases"; 
+import MisClases from "./pages/tutor/MisClases";
 import EditarClase from "./pages/tutor/EditarClase";
-
 
 export const router = createBrowserRouter([
   {
@@ -34,14 +33,14 @@ export const router = createBrowserRouter([
     element: <AppProtected />,
     children: [
       { path: "clases", element: <Clases /> },
-      { path: "perfil", element: <Perfil /> },
+      { path: "perfil/:id", element: <Perfil /> },
       { path: "dashboard/tutor", element: <TutorDashboard /> },
       { path: "dashboard/alumno", element: <AlumnoDashboard /> },
       { path: "solicitudes/tutor", element: <ClasesTutor /> },
       { path: "solicitudes/alumno", element: <AlumnoSolicitudes /> },
       { path: "horarios", element: <Horarios /> },
       { path: "horarios/nuevo", element: <NuevoHorario /> },
-      { path: 'mis-clases', element: <MisClases /> },
+      { path: "mis-clases", element: <MisClases /> },
       { path: "/clases/:id/editar", element: <EditarClase /> }, // Ruta para editar una clase específica
     ],
   },

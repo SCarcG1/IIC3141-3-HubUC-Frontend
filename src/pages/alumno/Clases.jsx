@@ -192,12 +192,22 @@ export default function Clases({ initialLessons = null }) {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleSolicitarClase(lesson)}
-                    className="bg-violet-600 hover:bg-violet-800 px-4 py-2 text-sm rounded"
-                  >
-                    Solicitar clase
-                  </button>
+                  <div className="flex flex-col items-end space-y-2">
+                    <button
+                      onClick={() => navigate(`/perfil/${lesson.tutor_id}`)}
+                      className="text-violet-400 hover:text-violet-600 text-sm underline"
+                      type="button"
+                    >
+                      Ver perfil tutor
+                    </button>
+
+                    <button
+                      onClick={() => handleSolicitarClase(lesson)}
+                      className="bg-violet-600 hover:bg-violet-800 px-4 py-2 text-sm rounded"
+                    >
+                      Solicitar clase
+                    </button>
+                  </div>
                 </div>
               );
             })

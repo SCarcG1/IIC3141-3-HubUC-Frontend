@@ -45,7 +45,7 @@ export default function Navbar() {
         </button>
 
         <Link
-          to="/perfil"
+          to={`/perfil/${user.id}`}
           className="hover:text-violet-400 transition duration-200"
         >
           Perfil
