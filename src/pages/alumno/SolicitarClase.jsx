@@ -105,8 +105,9 @@ const handleReservar = async () => {
           Solicitar clase de {course?.name || "Clase"}
         </h2>
 
-        <label className="block mb-2">Fecha:</label>
+        <label className="block mb-2" htmlFor="fecha">Fecha:</label>
         <input
+          id="fecha"
           type="date"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}

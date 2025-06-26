@@ -60,13 +60,13 @@ export default function AlumnoDashboard() {
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Clases de hoy</h2>
-            <p className="text-xl mb-4">{clasesHoy.length}</p>
+            <p className="text-xl mb-4" data-testid="clases-hoy-count">{clasesHoy.length}</p>
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Próxima clase</h2>
             {proximaClase ? (
-              <p>
+              <p data-testid="proxima-clase-info">
                 {proximaClase.private_lesson?.course?.name} -{" "}
                 {new Date(proximaClase.start_time).toLocaleTimeString("es-CL", {
                   hour: "2-digit",
@@ -82,7 +82,7 @@ export default function AlumnoDashboard() {
             <h2 className="text-lg font-semibold mb-1">
               Solicitudes pendientes
             </h2>
-            <p className="text-xl mb-4">
+            <p className="text-xl mb-4" data-testid="solicitudes-pendientes-count">
               {solicitudes.filter((s) => s.status === "pending").length}
             </p>
             <Link
