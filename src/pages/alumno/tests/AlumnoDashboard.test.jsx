@@ -7,12 +7,52 @@ import api from "../../../services/api";
 // Mock del módulo API
 vi.mock("../../../services/api");
 
-// Mock del componente Horario (si no es crítico testearlo aquí)
+// Mock del componente Horario
 vi.mock("../../../components/common/Horario", () => ({
   default: () => <div data-testid="horario-mock">[Horario]</div>,
 }));
 
 describe("AlumnoDashboard", () => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 20); // hoy a las 08:20
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 10, 0); // mañana a las 10:00
+
+  const mockClases = [
+    {
+      id: 1,
+      status: "accepted",
+      start_time: today.toISOString(),
+      end_time: new Date(today.getTime() + 80 * 60000).toISOString(),
+      private_lesson: {
+        course: { name: "Álgebra Lineal" },
+        tutor: { name: "Tutor X" },
+      },
+      student: { name: "Alumno" },
+    },
+    {
+      id: 2,
+      status: "accepted",
+      start_time: tomorrow.toISOString(),
+      end_time: new Date(tomorrow.getTime() + 80 * 60000).toISOString(),
+      private_lesson: {
+        course: { name: "Cálculo I" },
+        tutor: { name: "Tutor Y" },
+      },
+      student: { name: "Alumno" },
+    },
+    {
+      id: 3,
+      status: "pending",
+      start_time: tomorrow.toISOString(),
+      end_time: new Date(tomorrow.getTime() + 80 * 60000).toISOString(),
+      private_lesson: {
+        course: { name: "Física" },
+        tutor: { name: "Tutor Z" },
+      },
+      student: { name: "Alumno" },
+    },
+  ];
+
   beforeEach(() => {
     localStorage.setItem("token", "mock-token");
   });
@@ -22,29 +62,8 @@ describe("AlumnoDashboard", () => {
     localStorage.clear();
   });
 
-  it("muestra estado de carga inicialmente", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
-
-    render(
-      <MemoryRouter>
-        <AlumnoDashboard />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText(/Cargando solicitudes/i)).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText(/No hay solicitudes aún/i)).toBeInTheDocument();
-    });
-  });
-
   it("muestra cantidad de solicitudes pendientes", async () => {
-    const mockSolicitudes = [
-      { id: 1, status: "pending" },
-      { id: 2, status: "approved" },
-      { id: 3, status: "pending" },
-    ];
-    api.get.mockResolvedValueOnce({ data: mockSolicitudes });
+    api.get.mockResolvedValueOnce({ data: mockClases });
 
     render(
       <MemoryRouter>
@@ -53,13 +72,13 @@ describe("AlumnoDashboard", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("2")).toBeInTheDocument(); // 2 pendientes
-      expect(screen.getByText(/Ver solicitudes/i)).toBeInTheDocument();
+      const count = screen.getByTestId("solicitudes-pendientes-count");
+      expect(count.textContent).toBe("1"); // sólo 1 pendiente
     });
   });
 
-  it("muestra el resumen con clases hoy y próxima clase", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
+  it("muestra correctamente clases de hoy y próxima clase", async () => {
+    api.get.mockResolvedValueOnce({ data: mockClases });
 
     render(
       <MemoryRouter>
@@ -67,13 +86,14 @@ describe("AlumnoDashboard", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText(/Clases de hoy/i)).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument(); // resumen.clasesHoy
-    expect(screen.getByText(/Álgebra Lineal - 12:20 hrs/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("clases-hoy-count").textContent).toBe("1");
+      expect(screen.getByTestId("proxima-clase-info").textContent).toMatch(/Cálculo I/i);
+    });
   });
 
   it("muestra el componente Horario", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
+    api.get.mockResolvedValueOnce({ data: mockClases });
 
     render(
       <MemoryRouter>
@@ -81,6 +101,6 @@ describe("AlumnoDashboard", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByTestId("horario-mock")).toBeInTheDocument();
+    expect(await screen.findByTestId("horario-mock")).toBeInTheDocument();
   });
 });

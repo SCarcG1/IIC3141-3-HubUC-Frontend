@@ -77,8 +77,9 @@ export default function SolicitarClase() {
         <p>Cargando bloques...</p>
       ) : (
         <>
-          <label className="block mb-2">Fecha (dentro de la vigencia):</label>
+          <label htmlFor="fecha" className="block mb-2">Fecha (dentro de la vigencia):</label>
           <input
+            id="fecha"
             type="date"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}

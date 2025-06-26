@@ -1,4 +1,3 @@
-// src/pages/tests/Horarios.test.jsx
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Horarios from '../HorariosTutor';
@@ -16,7 +15,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('Horarios', () => {
+describe('HorariosTutor', () => {
   beforeEach(() => {
     localStorage.setItem('user', JSON.stringify({ id: 99 }));
     localStorage.setItem('token', 'test-token');
@@ -58,8 +57,8 @@ describe('Horarios', () => {
         {
           id: 1,
           weekday: 'Tuesday',
-          start_hour: 9,
-          end_hour: 12,
+          start_hour: '09:00',
+          end_hour: '12:00',
           valid_from: '2025-06-10T00:00:00Z',
           valid_until: '2025-07-01T00:00:00Z',
         },
@@ -73,7 +72,7 @@ describe('Horarios', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Martes de 9:00 a 12:00/)).toBeInTheDocument();
+      expect(screen.getByText(/Martes de 09:00 a 12:00/)).toBeInTheDocument();
       expect(screen.getByText(/Vigente desde/)).toBeInTheDocument();
     });
   });
@@ -104,5 +103,44 @@ describe('Horarios', () => {
     const btn = await screen.findByText(/volver al dashboard/i);
     fireEvent.click(btn);
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard/tutor');
+  });
+
+  it('elimina un horario cuando se confirma', async () => {
+    const horario = {
+      id: 42,
+      weekday: 'Monday',
+      start_hour: '08:00',
+      end_hour: '10:00',
+      valid_from: '2025-06-10T00:00:00Z',
+      valid_until: '2025-07-01T00:00:00Z',
+    };
+
+    api.get.mockResolvedValueOnce({ data: [horario] });
+    api.delete.mockResolvedValueOnce({});
+
+    vi.spyOn(window, 'confirm').mockReturnValueOnce(true);
+
+    render(
+      <MemoryRouter>
+        <Horarios />
+      </MemoryRouter>
+    );
+
+    await screen.findByText(/Lunes de 08:00 a 10:00/);
+
+    const btnEliminar = screen.getByText('Eliminar');
+    fireEvent.click(btnEliminar);
+
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith(
+        '/weekly-timeblocks/42',
+        expect.objectContaining({
+          headers: { Authorization: 'Bearer test-token' },
+        })
+      );
+    });
+
+    // Se elimina del DOM
+    expect(screen.queryByText(/Lunes de 08:00 a 10:00/)).not.toBeInTheDocument();
   });
 });

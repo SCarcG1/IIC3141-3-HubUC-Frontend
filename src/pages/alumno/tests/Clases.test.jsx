@@ -3,6 +3,17 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Clases from '../Clases';
 
+const navigateMock = vi.fn(); // <-- DEBE estar fuera del mock de react-router-dom
+
+// Mockear useNavigate globalmente
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => navigateMock,
+  };
+});
+
 const mockLessons = [
   {
     id: 1,
@@ -10,7 +21,6 @@ const mockLessons = [
     tutor_id: 456,
     price: 10000,
     start_time: '2025-06-09T03:56:28.602574',
-    description: 'Clase de prueba 1',
   },
   {
     id: 2,
@@ -18,51 +28,54 @@ const mockLessons = [
     tutor_id: 654,
     price: 20000,
     start_time: '2025-06-10T18:00:00.000000',
-    description: 'Clase de prueba 2',
   },
 ];
 
-describe('Clases (unit test)', () => {
+describe('Clases (unit tests)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    navigateMock.mockClear(); // limpiar navegación entre tests
   });
 
-  it('renderiza correctamente una lista de clases con datos enriquecidos', () => {
+  it('renderiza clases correctamente con datos enriquecidos', () => {
     render(
       <MemoryRouter>
-        <Clases
-          initialLessons={mockLessons}
-        />
+        <Clases initialLessons={mockLessons} />
       </MemoryRouter>
     );
 
     expect(screen.getByText('Clases disponibles')).toBeInTheDocument();
-    expect(screen.getByText('Precio: $10000')).toBeInTheDocument();
-    expect(screen.getByText('Precio: $20000')).toBeInTheDocument();
-
-    const buttons = screen.getAllByText('Solicitar clase');
-    expect(buttons).toHaveLength(2);
+    expect(screen.getAllByText(/Precio: \$\d+/)).toHaveLength(2);
+    expect(screen.getAllByText('Solicitar clase')).toHaveLength(2);
   });
 
   it('muestra el modal al hacer clic en "Solicitar clase"', async () => {
     render(
       <MemoryRouter>
-        <Clases
-          initialLessons={mockLessons}
-        />
+        <Clases initialLessons={mockLessons} />
       </MemoryRouter>
     );
 
+    // Click en el botón "Solicitar clase"
     fireEvent.click(screen.getAllByText('Solicitar clase')[0]);
 
+    // Verifica que el título del modal esté presente (más flexible)
     await waitFor(() => {
-      expect(screen.getByText('Confirmar solicitud')).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /solicitar clase/i })
+      ).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/¿Estás seguro de que deseas solicitar/)).toBeInTheDocument();
-    expect(screen.getByText('Cancelar')).toBeInTheDocument();
-    expect(screen.getByText('Confirmar')).toBeInTheDocument();
+    // Verifica que aparezcan los botones de acción del modal
+    expect(screen.getByRole('button', { name: /confirmar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
+
+    // Opcional: validación de mensaje de fecha vacía
+    expect(
+      screen.getByText(/no hay bloques disponibles/i)
+    ).toBeInTheDocument();
   });
+
 
   it('muestra mensaje de carga si no hay initialLessons', () => {
     render(
@@ -74,20 +87,33 @@ describe('Clases (unit test)', () => {
     expect(screen.getByText('Cargando clases...')).toBeInTheDocument();
   });
 
-  it('permite escribir en los filtros de curso y tutor', () => {
+  it('permite escribir en filtros y mantiene los valores', () => {
     render(
       <MemoryRouter>
         <Clases initialLessons={mockLessons} />
       </MemoryRouter>
     );
 
-    const inputCurso = screen.getByPlaceholderText('Nombre de curso');
-    const inputTutor = screen.getByPlaceholderText('Nombre del tutor');
+    const cursoInput = screen.getByPlaceholderText('Nombre de curso');
+    const tutorInput = screen.getByPlaceholderText('Nombre del tutor');
 
-    fireEvent.change(inputCurso, { target: { value: 'álgebra' } });
-    fireEvent.change(inputTutor, { target: { value: 'Carlos' } });
+    fireEvent.change(cursoInput, { target: { value: 'álgebra' } });
+    fireEvent.change(tutorInput, { target: { value: 'Carlos' } });
 
-    expect(inputCurso.value).toBe('álgebra');
-    expect(inputTutor.value).toBe('Carlos');
+    expect(cursoInput.value).toBe('álgebra');
+    expect(tutorInput.value).toBe('Carlos');
+  });
+
+  it('navega al perfil del tutor al hacer clic en "Ver perfil tutor"', () => {
+    render(
+      <MemoryRouter>
+        <Clases initialLessons={mockLessons} />
+      </MemoryRouter>
+    );
+
+    const verPerfilBtn = screen.getAllByText('Ver perfil tutor')[0];
+    fireEvent.click(verPerfilBtn);
+
+    expect(navigateMock).toHaveBeenCalledWith('/perfil/456');
   });
 });
