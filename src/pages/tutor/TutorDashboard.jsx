@@ -6,13 +6,8 @@ import api from "../../services/api";
 export default function TutorDashboard() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log(solicitudes);
-
-  // datos hardcodeados
-  const resumen = {
-    clasesHoy: 2,
-    proximaClase: "Matemáticas - 09:40 hrs",
-  };
+  const [clasesHoy, setClasesHoy] = useState(0);
+  const [proximaClase, setProximaClase] = useState(null);
 
   useEffect(() => {
     const fetchSolicitudes = async () => {
@@ -20,10 +15,42 @@ export default function TutorDashboard() {
         const token = localStorage.getItem("token");
         const res = await api.get("/reservations/tutor", {
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}` },
         });
-        setSolicitudes(res.data);
+
+        const data = res.data.filter(r => r.status === "accepted");
+        setSolicitudes(data);
+
+        const now = new Date();
+        const hoy = new Date(now.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+        hoy.setHours(0, 0, 0, 0);
+        const mañana = new Date(hoy);
+        mañana.setDate(hoy.getDate() + 1);
+
+        const clasesDeHoy = data.filter(r => {
+          const start = new Date(r.start_time);
+          const localStart = new Date(start.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+          return localStart >= hoy && localStart < mañana;
+        });
+
+        setClasesHoy(clasesDeHoy.length);
+
+        // Ordenar por fecha y tomar la más próxima a ahora
+        const futuras = data
+          .map(r => ({
+            ...r,
+            start: new Date(r.start_time),
+          }))
+          .filter(r => r.start > now)
+          .sort((a, b) => a.start - b.start);
+
+        if (futuras.length > 0) {
+          const prox = futuras[0];
+          const horaLocal = new Date(prox.start.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+          const hora = horaLocal.toTimeString().slice(0, 5);
+          setProximaClase(`${prox.private_lesson?.course?.name || "Clase"} - ${hora} hrs`);
+        }
+
       } catch (error) {
         console.error("Error al obtener solicitudes:", error);
       } finally {
@@ -37,14 +64,12 @@ export default function TutorDashboard() {
   return (
     <div className="bg-neutral-950 min-h-screen text-white p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Panel Principal</h1>
+        <h1 className="text-2xl font-bold">Horario De Esta Semana</h1>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-1 overflow-x-auto">
-          <div className="flex-1 overflow-x-auto">
-            <Horario />
-          </div>
+          <Horario />
         </div>
 
         <div className="w-full lg:w-80 flex flex-col gap-4">
@@ -68,12 +93,14 @@ export default function TutorDashboard() {
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Clases de hoy</h2>
-            <p className="text-xl mb-4">{resumen.clasesHoy}</p>
+            <p className="text-xl mb-4">{clasesHoy}</p>
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Próxima clase</h2>
-            <p className="text-m mb-4">{resumen.proximaClase}</p>
+            <p className="text-m mb-4">
+              {proximaClase || "Sin clases próximas"}
+            </p>
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">

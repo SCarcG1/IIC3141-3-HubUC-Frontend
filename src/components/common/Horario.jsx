@@ -23,10 +23,8 @@ export default function Horario() {
     "18:50", "20:10",
   ];
 
-  // Estructura final
   const bloquesPorSlot = {};
 
-  // Semana actual
   const now = new Date();
   const day = now.getDay();
   const diffToMonday = (day === 0 ? -6 : 1) - day;
@@ -37,7 +35,6 @@ export default function Horario() {
   sunday.setDate(monday.getDate() + 6);
   sunday.setHours(23, 59, 59, 999);
 
-  // Preprocesar slots fijos en minutos para comparar
   const slotMinutos = horas.map((h) => {
     const [hh, mm] = h.split(":").map(Number);
     return hh * 60 + mm;
@@ -53,7 +50,6 @@ export default function Horario() {
 
     if (localStart < monday || localStart > sunday) return;
 
-    // Slot al que pertenece
     const startMinutos = localStart.getHours() * 60 + localStart.getMinutes();
     let slot = horas[0];
     for (let i = 0; i < slotMinutos.length; i++) {
@@ -83,19 +79,26 @@ export default function Horario() {
   });
 
   useEffect(() => {
-    const fetchStudentReservations = async () => {
+    const fetchReservations = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await api.get("/reservations/student", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const user = JSON.parse(localStorage.getItem("user"));
+        const isTutor = user?.role === "tutor";
+
+        const res = await api.get(
+          isTutor ? "/reservations/tutor" : "/reservations/student",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
         setClases(res.data);
       } catch (err) {
-        console.error("Error cargando reservas del estudiante:", err);
+        console.error("Error cargando reservas:", err);
       }
     };
 
-    fetchStudentReservations();
+    fetchReservations();
   }, []);
 
   return (
@@ -139,7 +142,7 @@ export default function Horario() {
                         ))}
                       </div>
                     ) : (
-                      <span className="text-neutral-400">-</span>
+                      <span className="text-neutral-400"></span>
                     )}
                   </td>
                 );
