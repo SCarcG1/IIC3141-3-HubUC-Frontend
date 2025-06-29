@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Horario from "../../components/common/Horario";
 import api from "../../services/api";
+import { useNavigate } from 'react-router-dom';
 
 export default function AlumnoDashboard() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [clases, setClases] = useState([]);
+  const navigate = useNavigate();
 
   const now = new Date();
   const clasesHoy = clases.filter((r) => {
@@ -21,6 +23,13 @@ export default function AlumnoDashboard() {
     .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0];
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'alumno'
+    if (!token || role !== "student") {
+      navigate("/", { replace: true });
+      return;
+    }
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");

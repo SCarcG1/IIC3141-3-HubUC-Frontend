@@ -38,6 +38,14 @@ export default function Horarios() {
   };
 
   useEffect(() => {
+
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'tutor'
+    if (!token || role !== "tutor") {
+      navigate("/", { replace: true });
+      return;
+    }
     const fetchHorarios = async () => {
       try {
         const res = await api.get(`/weekly-timeblocks/${user.id}`, {

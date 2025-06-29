@@ -29,6 +29,13 @@ export default function AlumnoSolicitudes() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'alumno'
+    if (!token || role !== "student") {
+      navigate("/", { replace: true });
+      return;
+    }
     const fetchSolicitudes = async () => {
       try {
         const token = localStorage.getItem("token");

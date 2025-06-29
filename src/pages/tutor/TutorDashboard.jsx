@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Horario from "../../components/common/Horario";
+import { useNavigate } from 'react-router-dom';
 import api from "../../services/api";
 
 export default function TutorDashboard() {
+  const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
   console.log(solicitudes);
@@ -15,6 +17,13 @@ export default function TutorDashboard() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'tutor'
+    if (!token || role !== "tutor") {
+      navigate("/", { replace: true });
+      return;
+    }
     const fetchSolicitudes = async () => {
       try {
         const token = localStorage.getItem("token");
