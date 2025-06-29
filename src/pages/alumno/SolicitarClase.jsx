@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from "react";
 import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function SolicitarClase({ lesson, onClose, onSubmit, courseCache }) {
   const [blocks, setBlocks] = useState([]);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [fecha, setFecha] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'alumno'
+    if (!token || role !== "student") {
+      navigate("/", { replace: true });
+      return;
+    }
     const fetchBlocks = async () => {
       try {
         const token = localStorage.getItem("token");

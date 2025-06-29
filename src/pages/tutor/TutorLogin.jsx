@@ -35,11 +35,17 @@ export default function TutorLogin() {
 
       const res = await api.post(endpoint, payload);
       const token = res.data.access_token;
+      const role = res.data.user.role;
 
       if (token) {
+        if (isLogin && role !== "tutor") {
+          alert("Esta sección es solo para tutores. Usa la vista de login correspondiente.");
+          return; // No guardes nada ni redirijas
+        }
+
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
-
+        localStorage.setItem('role', role);
       }
 
       setMessage(`✅ ${isLogin ? "Ingreso" : "Registro"} exitoso`);
@@ -53,6 +59,7 @@ export default function TutorLogin() {
       );
     }
   };
+
 
   return (
     <div className="flex flex-col items-center gap-6 bg-neutral-950 min-h-screen justify-center p-8 text-white">

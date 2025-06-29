@@ -35,10 +35,18 @@ export default function AlumnoLogin() {
 
       const res = await api.post(endpoint, payload);
       const token = res.data.access_token;
+      const role = res.data.user.role;
 
       if (token) {
+        if (isLogin && role !== "student") {
+          // ⚠️ Usuario intenta entrar al login de alumno con cuenta de tutor
+          alert("Esta sección es solo para estudiantes. Usa la vista de login correspondiente.");
+          return; // No guardar nada ni redirigir
+        }
+
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("role", role);
       }
 
       setMessage(`✅ ${isLogin ? "Ingreso" : "Registro"} exitoso`);
@@ -52,6 +60,7 @@ export default function AlumnoLogin() {
       );
     }
   };
+
 
   return (
     <div className="flex flex-col items-center gap-6 bg-neutral-950 min-h-screen justify-center p-8 text-white">

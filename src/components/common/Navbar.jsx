@@ -13,7 +13,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    localStorage.removeItem("role");
+    navigate("/", { replace: true });
   };
 
   const handleClick = () => {

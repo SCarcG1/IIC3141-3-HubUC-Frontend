@@ -52,6 +52,13 @@ export default function MisClases() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'tutor'
+    if (!token || role !== "tutor") {
+      navigate("/", { replace: true });
+      return;
+    }
     fetchClases();
   }, []);
 

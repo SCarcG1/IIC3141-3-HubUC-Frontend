@@ -95,6 +95,13 @@ const handleConfirmarSolicitud = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // Redirección si no hay token o el rol no es 'alumno'
+    if (!token || role !== "student") {
+      navigate("/", { replace: true });
+      return;
+    }
     if (initialLessons) return;
     fetchAllLessons();
     fetchAllCourses();
