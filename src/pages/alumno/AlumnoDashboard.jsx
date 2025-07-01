@@ -2,20 +2,27 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Horario from "../../components/common/Horario";
 import api from "../../services/api";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function AlumnoDashboard() {
   const [solicitudes, setSolicitudes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [clases, setClases] = useState([]);
   const navigate = useNavigate();
 
   const now = new Date();
   const clasesHoy = clases.filter((r) => {
-    const localStart = new Date(new Date(r.start_time).toLocaleString("en-US", { timeZone: "America/Santiago" }));
-    return r.status === "accepted" &&
+    const localStart = new Date(
+      new Date(r.start_time).toLocaleString("en-US", {
+        timeZone: "America/Santiago",
+      })
+    );
+    return (
+      r.status === "accepted" &&
       localStart.getDate() === now.getDate() &&
       localStart.getMonth() === now.getMonth() &&
-      localStart.getFullYear() === now.getFullYear();
+      localStart.getFullYear() === now.getFullYear()
+    );
   });
 
   const proximaClase = clases
@@ -40,6 +47,8 @@ export default function AlumnoDashboard() {
         setClases(res1.data);
       } catch (error) {
         console.error("Error:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -69,7 +78,9 @@ export default function AlumnoDashboard() {
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
             <h2 className="text-lg font-semibold mb-1">Clases de hoy</h2>
-            <p className="text-xl mb-4" data-testid="clases-hoy-count">{clasesHoy.length}</p>
+            <p className="text-xl mb-4" data-testid="clases-hoy-count">
+              {clasesHoy.length}
+            </p>
           </div>
 
           <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
@@ -91,15 +102,23 @@ export default function AlumnoDashboard() {
             <h2 className="text-lg font-semibold mb-1">
               Solicitudes pendientes
             </h2>
-            <p className="text-xl mb-4" data-testid="solicitudes-pendientes-count">
-              {solicitudes.filter((s) => s.status === "pending").length}
-            </p>
-            <Link
-              to="/solicitudes/alumno"
-              className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
-            >
-              Ver solicitudes
-            </Link>
+            {loading ? (
+              <p className="mt-6 text-neutral-300">Cargando solicitudes...</p>
+            ) : solicitudes.length === 0 ? (
+              <p className="mt-6 text-neutral-400">No hay solicitudes aún.</p>
+            ) : (
+              <div>
+                <p className="text-xl mb-4">
+                  {solicitudes.filter((s) => s.status === "pending").length}
+                </p>
+                <Link
+                  to="/solicitudes/alumno"
+                  className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
+                >
+                  Ver solicitudes
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
