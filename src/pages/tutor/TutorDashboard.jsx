@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Horario from "../../components/common/Horario";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 export default function TutorDashboard() {
@@ -24,21 +24,27 @@ export default function TutorDashboard() {
         const token = localStorage.getItem("token");
         const res = await api.get("/reservations/tutor", {
           headers: {
-            Authorization: `Bearer ${token}` },
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        const data = res.data.filter(r => r.status === "accepted");
+        //const data = res.data.filter(r => r.status === "accepted");
+        const data = res.data;
         setSolicitudes(data);
 
         const now = new Date();
-        const hoy = new Date(now.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+        const hoy = new Date(
+          now.toLocaleString("en-US", { timeZone: "America/Santiago" })
+        );
         hoy.setHours(0, 0, 0, 0);
         const mañana = new Date(hoy);
         mañana.setDate(hoy.getDate() + 1);
 
-        const clasesDeHoy = data.filter(r => {
+        const clasesDeHoy = data.filter((r) => {
           const start = new Date(r.start_time);
-          const localStart = new Date(start.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+          const localStart = new Date(
+            start.toLocaleString("en-US", { timeZone: "America/Santiago" })
+          );
           return localStart >= hoy && localStart < mañana;
         });
 
@@ -46,20 +52,23 @@ export default function TutorDashboard() {
 
         // Ordenar por fecha y tomar la más próxima a ahora
         const futuras = data
-          .map(r => ({
+          .map((r) => ({
             ...r,
             start: new Date(r.start_time),
           }))
-          .filter(r => r.start > now)
+          .filter((r) => r.start > now)
           .sort((a, b) => a.start - b.start);
 
         if (futuras.length > 0) {
           const prox = futuras[0];
-          const horaLocal = new Date(prox.start.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+          const horaLocal = new Date(
+            prox.start.toLocaleString("en-US", { timeZone: "America/Santiago" })
+          );
           const hora = horaLocal.toTimeString().slice(0, 5);
-          setProximaClase(`${prox.private_lesson?.course?.name || "Clase"} - ${hora} hrs`);
+          setProximaClase(
+            `${prox.private_lesson?.course?.name || "Clase"} - ${hora} hrs`
+          );
         }
-
       } catch (error) {
         console.error("Error al obtener solicitudes:", error);
       } finally {
