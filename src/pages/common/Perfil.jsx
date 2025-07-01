@@ -1,17 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../services/api";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../../services/api";
-
-// Placeholder contenedor Reviews
-function Reviews() {
-  return (
-    <div className="w-full h-full min-h-[300px] bg-neutral-800 p-6 rounded-lg border border-neutral-700">
-      <h3 className="text-lg font-semibold mb-2 text-white">Reviews</h3>
-      <p className="text-gray-400">Aquí irán las reviews del tutor...</p>
-    </div>
-  );
-}
+import Reviews from "../tutor/Reviews.jsx";
 
 // Placeholder contenedor Clases
 function Clases() {
@@ -35,27 +25,6 @@ export default function Perfil() {
   const [email, setEmail] = useState(user?.email || "[placeholder]");
 
   const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    async function fetchUser() {
-      setLoading(true);
-      try {
-        const res = await axios.get(`/users/${id}`);
-        const data = res.data;
-        setUser(data);
-        setName(data.name);
-        setEmail(data.email);
-      } catch (error) {
-        console.error(error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, [id]);
-
   const roleNames = {
     tutor: "Tutor",
     student: "Alumno",
@@ -65,11 +34,31 @@ export default function Perfil() {
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
   const isOwner = id === String(loggedInUser?.id);
 
+  useEffect(() => {
+    fetchUser();
+  }, [id]);
+
+  const fetchUser = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/users/${id}`);
+      const data = res.data;
+      setUser(data);
+      setName(data.name);
+      setEmail(data.email);
+    } catch (error) {
+      console.error(error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveChanges = async (e) => {
     e.preventDefault();
 
     try {
-      await api.patch(
+      await axios.patch(
         `/users/${id}`,
         {
           name: name,
@@ -194,7 +183,7 @@ export default function Perfil() {
 
           {user?.role === "tutor" && (
             <div className="flex-[3]">
-              <Reviews />
+              <Reviews tutorId={user?.id} isOwner={isOwner} />
             </div>
           )}
         </div>
