@@ -120,7 +120,16 @@ export default function AlumnoSolicitudes() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/perfil/${s.private_lesson.tutor.id}`)
+                          }
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
+                        >
+                          Ver perfil tutor
+                        </button>
                         <button
                           onClick={() => handleEliminar(s.id)}
                           className="bg-violet-50 text-violet-600 hover:bg-red-400 hover:text-violet-50 px-4 py-2 rounded duration-200"

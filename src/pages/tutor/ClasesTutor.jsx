@@ -17,9 +17,13 @@ export default function ClasesTutor() {
   const handleAceptar = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await api.put(`/reservations/${id}`, { status: "accepted" }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(
+        `/reservations/${id}`,
+        { status: "accepted" },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setSolicitudes((prev) =>
         prev.map((s) => (s.id === id ? { ...s, status: "accepted" } : s))
       );
@@ -31,9 +35,13 @@ export default function ClasesTutor() {
   const handleRechazar = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await api.put(`/reservations/${id}`, { status: "rejected" }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(
+        `/reservations/${id}`,
+        { status: "rejected" },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setSolicitudes((prev) =>
         prev.map((s) => (s.id === id ? { ...s, status: "rejected" } : s))
       );
@@ -132,19 +140,28 @@ export default function ClasesTutor() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-col items-end space-y-2">
                         <button
-                          onClick={() => handleAceptar(s.id)}
-                          className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
+                          onClick={() => navigate(`/perfil/${s.student.id}`)}
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
                         >
-                          Aceptar
+                          Ver perfil alumno
                         </button>
-                        <button
-                          onClick={() => handleRechazar(s.id)}
-                          className="bg-violet-50 text-violet-600 hover:bg-red-400 hover:text-violet-50 px-4 py-2 rounded duration-200"
-                        >
-                          Rechazar
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleAceptar(s.id)}
+                            className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
+                          >
+                            Aceptar
+                          </button>
+                          <button
+                            onClick={() => handleRechazar(s.id)}
+                            className="bg-violet-50 text-violet-600 hover:bg-red-400 hover:text-violet-50 px-4 py-2 rounded duration-200"
+                          >
+                            Rechazar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
