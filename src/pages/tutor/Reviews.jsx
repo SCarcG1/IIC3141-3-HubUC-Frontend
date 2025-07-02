@@ -27,12 +27,10 @@ export default function Reviews({ tutorId, isOwner }) {
   // Busqueda de reservation_id en la API
   const fetchReservationId = async () => {
     try {
-      const response = await axios.get("/reservations/student");
-      const reservation = response.find(
-        (r) =>
-          r.private_lesson.tutor.id === tutorId &&
-          r.student.id === loggedInUser.id
+      const response = await axios.get(
+        "/reservations/tutor/{tutorId}/student/{loggedInUser.id}"
       );
+      const reservation = response.data;
       return reservation ? reservation.id : null;
     } catch (error) {
       console.error("Error al buscar solicitud:", error);
