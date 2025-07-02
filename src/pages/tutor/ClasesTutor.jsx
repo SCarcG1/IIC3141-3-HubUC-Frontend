@@ -14,39 +14,51 @@ export default function ClasesTutor() {
     return `${day}-${month}-${year}`;
   };
 
-  const handleAceptar = async (id) => {
+  const handleAceptar = async (solicitud) => {
     try {
       const token = localStorage.getItem("token");
-      await api.put(
-        `/reservations/${id}`,
-        { status: "accepted" },
+      await api.patch(
+        `/reservations/tutor/${solicitud.id}`,
+        {
+          private_lesson_id: solicitud.private_lesson_id,
+          student_id: solicitud.student_id,
+          status: "accepted",
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       setSolicitudes((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, status: "accepted" } : s))
+        prev.map((s) =>
+          s.id === solicitud.id ? { ...s, status: "accepted" } : s
+        )
       );
     } catch (error) {
-      console.error(`Error al aceptar solicitud ${id}:`, error);
+      console.error(`Error al aceptar solicitud ${solicitud.id}:`, error);
     }
   };
 
-  const handleRechazar = async (id) => {
+  const handleRechazar = async (solicitud) => {
     try {
       const token = localStorage.getItem("token");
       await api.put(
-        `/reservations/${id}`,
-        { status: "rejected" },
+        `/reservations/${solicitud.id}`,
+        {
+          private_lesson_id: solicitud.private_lesson_id,
+          student_id: solicitud.student_id,
+          status: "rejected",
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       setSolicitudes((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, status: "rejected" } : s))
+        prev.map((s) =>
+          s.id === solicitud.id ? { ...s, status: "rejected" } : s
+        )
       );
     } catch (error) {
-      console.error(`Error al rechazar solicitud ${id}:`, error);
+      console.error(`Error al rechazar solicitud ${solicitud.id}:`, error);
     }
   };
 
@@ -150,13 +162,13 @@ export default function ClasesTutor() {
                         </button>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleAceptar(s.id)}
+                            onClick={() => handleAceptar(s)}
                             className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
                           >
                             Aceptar
                           </button>
                           <button
-                            onClick={() => handleRechazar(s.id)}
+                            onClick={() => handleRechazar(s)}
                             className="bg-violet-50 text-violet-600 hover:bg-red-400 hover:text-violet-50 px-4 py-2 rounded duration-200"
                           >
                             Rechazar
@@ -190,25 +202,37 @@ export default function ClasesTutor() {
                   return (
                     <div
                       key={s.id}
-                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
+                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700 flex justify-between items-center"
                     >
-                      <div className="text-lg font-semibold">
-                        Clase: {s.private_lesson.course.name}
+                      <div>
+                        <div className="text-lg font-semibold">
+                          Clase: {s.private_lesson.course.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Nombre Estudiante: {s.student.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Fecha: {fecha}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Desde: {desde}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Hasta: {hasta}
+                        </div>
+                        <div className="text-sm text-green-500">
+                          Estado: Aceptada
+                        </div>
                       </div>
-                      <div className="text-sm text-neutral-400">
-                        Nombre Estudiante: {s.student.name}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Fecha: {fecha}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Desde: {desde}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Hasta: {hasta}
-                      </div>
-                      <div className="text-sm text-green-500">
-                        Estado: Aceptada
+
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() => navigate(`/perfil/${s.student.id}`)}
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
+                        >
+                          Ver perfil alumno
+                        </button>
                       </div>
                     </div>
                   );
@@ -237,25 +261,36 @@ export default function ClasesTutor() {
                   return (
                     <div
                       key={s.id}
-                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
+                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700 flex justify-between items-center"
                     >
-                      <div className="text-lg font-semibold">
-                        Clase: {s.private_lesson.course.name}
+                      <div>
+                        <div className="text-lg font-semibold">
+                          Clase: {s.private_lesson.course.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Nombre Estudiante: {s.student.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Fecha: {fecha}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Desde: {desde}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Hasta: {hasta}
+                        </div>
+                        <div className="text-sm text-red-500">
+                          Estado: Rechazada
+                        </div>
                       </div>
-                      <div className="text-sm text-neutral-400">
-                        Nombre Estudiante: {s.student.name}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Fecha: {fecha}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Desde: {desde}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Hasta: {hasta}
-                      </div>
-                      <div className="text-sm text-red-500">
-                        Estado: Rechazada
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() => navigate(`/perfil/${s.student.id}`)}
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
+                        >
+                          Ver perfil alumno
+                        </button>
                       </div>
                     </div>
                   );
