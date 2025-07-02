@@ -120,7 +120,16 @@ export default function AlumnoSolicitudes() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/perfil/${s.private_lesson.tutor.id}`)
+                          }
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
+                        >
+                          Ver perfil tutor
+                        </button>
                         <button
                           onClick={() => handleEliminar(s.id)}
                           className="bg-violet-50 text-violet-600 hover:bg-red-400 hover:text-violet-50 px-4 py-2 rounded duration-200"
@@ -155,25 +164,38 @@ export default function AlumnoSolicitudes() {
                   return (
                     <div
                       key={s.id}
-                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
+                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700 flex justify-between items-center"
                     >
-                      <div className="text-lg font-semibold">
-                        Clase: {s.private_lesson.course.name}
+                      <div>
+                        <div className="text-lg font-semibold">
+                          Clase: {s.private_lesson.course.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Tutor: {s.private_lesson.tutor.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Fecha: {fecha}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Desde: {desde}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Hasta: {hasta}
+                        </div>
+                        <div className="text-sm text-green-500">
+                          Estado: Aceptada
+                        </div>
                       </div>
-                      <div className="text-sm text-neutral-400">
-                        Tutor: {s.private_lesson.tutor.name}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Fecha: {fecha}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Desde: {desde}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Hasta: {hasta}
-                      </div>
-                      <div className="text-sm text-green-500">
-                        Estado: Aceptada
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/perfil/${s.private_lesson.tutor.id}`)
+                          }
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
+                        >
+                          Ver perfil tutor
+                        </button>
                       </div>
                     </div>
                   );
@@ -202,25 +224,38 @@ export default function AlumnoSolicitudes() {
                   return (
                     <div
                       key={s.id}
-                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
+                      className="bg-neutral-800 p-4 rounded-lg border border-neutral-700 flex justify-between items-center"
                     >
-                      <div className="text-lg font-semibold">
-                        Clase: {s.private_lesson.course.name}
+                      <div>
+                        <div className="text-lg font-semibold">
+                          Clase: {s.private_lesson.course.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Tutor: {s.private_lesson.tutor.name}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Fecha: {fecha}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Desde: {desde}
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Hasta: {hasta}
+                        </div>
+                        <div className="text-sm text-red-500">
+                          Estado: Rechazada
+                        </div>
                       </div>
-                      <div className="text-sm text-neutral-400">
-                        Tutor: {s.private_lesson.tutor.name}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Fecha: {fecha}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Desde: {desde}
-                      </div>
-                      <div className="text-sm text-neutral-400">
-                        Hasta: {hasta}
-                      </div>
-                      <div className="text-sm text-red-500">
-                        Estado: Rechazada
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/perfil/${s.private_lesson.tutor.id}`)
+                          }
+                          className="text-violet-400 hover:text-violet-600 text-sm underline"
+                          type="button"
+                        >
+                          Ver perfil tutor
+                        </button>
                       </div>
                     </div>
                   );
