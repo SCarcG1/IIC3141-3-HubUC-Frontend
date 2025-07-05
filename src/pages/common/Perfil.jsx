@@ -3,7 +3,6 @@ import axios from "../../services/api";
 import { useParams, useNavigate } from "react-router-dom";
 import Reviews from "../tutor/Reviews.jsx";
 
-// Placeholder contenedor Clases
 function Clases() {
   return (
     <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 h-full min-h-[300px]">
@@ -21,45 +20,20 @@ export default function Perfil() {
   const [loading, setLoading] = useState(true);
 
   const [editMode, setEditMode] = useState(false);
-  const [name, setName] = useState(user?.name || "[placeholder]");
-  const [email, setEmail] = useState(user?.email || "[placeholder]");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [number, setNumber] = useState("");
+  const [numberError, setNumberError] = useState("");
 
   const token = localStorage.getItem("token");
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const isOwner = id === String(loggedInUser?.id);
+
   const roleNames = {
     tutor: "Tutor",
     student: "Alumno",
   };
   const displayRole = roleNames[user?.role] || user?.role || "[placeholder]";
-
-  const loggedInUser = JSON.parse(localStorage.getItem("user"));
-  const isOwner = id === String(loggedInUser?.id);
-
-  const handleDeleteProfile = async () => {
-    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer.");
-
-    if (!confirmed) return;
-
-    try {
-      await axios.delete(`/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Limpiar datos del usuario y redirigir a la página de inicio o login
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/login");
-    } catch (err) {
-      console.error("Error al eliminar el perfil:", err);
-      alert("Ocurrió un error al eliminar el perfil.");
-    }
-  };
-
-
-  useEffect(() => {
-    fetchUser();
-  }, [id]);
 
   const fetchUser = async () => {
     setLoading(true);
@@ -67,8 +41,9 @@ export default function Perfil() {
       const res = await axios.get(`/users/${id}`);
       const data = res.data;
       setUser(data);
-      setName(data.name);
-      setEmail(data.email);
+      setName(data.name || "");
+      setEmail(data.email || "");
+      setNumber(data.number || "");
     } catch (error) {
       console.error(error);
       setUser(null);
@@ -80,27 +55,50 @@ export default function Perfil() {
   const handleSaveChanges = async (e) => {
     e.preventDefault();
 
+    const cleaned = number.trim();
+    if (cleaned && !/^\+569\d{8}$/.test(cleaned)) {
+      setNumberError("El número debe comenzar con +569 y tener 12 caracteres en total.");
+      return;
+    }
+    setNumberError("");
+
     try {
       await axios.patch(
         `/users/${id}`,
-        {
-          name: name,
-          email: email,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { name, email, number: cleaned },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+      setEditMode(false);
     } catch (err) {
       console.error(err);
     }
-    setEditMode(false);
   };
+
+  const handleDeleteProfile = async () => {
+    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer.");
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    } catch (err) {
+      console.error("Error al eliminar el perfil:", err);
+      alert("Ocurrió un error al eliminar el perfil.");
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, [id]);
 
   if (loading) return <p className="text-white p-8">Cargando perfil...</p>;
   if (!user) return <p className="text-white p-8">Usuario no encontrado</p>;
+
+  const whatsappURL = number ? `https://wa.me/${number.replace(/\D/g, "")}` : null;
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-8">
@@ -118,19 +116,14 @@ export default function Perfil() {
 
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex flex-col gap-6 flex-[2]">
-          <div className="bg-neutral-800 pt-10 px-6 pb-6 rounded-lg border border-neutral-700 flex-1 max-h-[400px] flex flex-col relative">
+          <div className="bg-neutral-800 pt-10 px-6 pb-6 rounded-lg border border-neutral-700 flex-1 max-h-[500px] flex flex-col relative">
             <span className="absolute top-4 right-4 bg-purple-600 text-white text-xs px-3 py-1 rounded-full font-semibold select-none z-10">
               {displayRole}
             </span>
 
             <div className="overflow-auto mb-4">
               <div className="mb-4">
-                <label
-                  className="block text-base font-semibold text-white mb-1"
-                  htmlFor="name"
-                >
-                  Nombre
-                </label>
+                <label className="block text-base font-semibold text-white mb-1" htmlFor="name">Nombre</label>
                 {editMode ? (
                   <input
                     id="name"
@@ -141,19 +134,12 @@ export default function Perfil() {
                     placeholder="Escribe tu nombre"
                   />
                 ) : (
-                  <p className="text-white text-lg">
-                    {name || "[placeholder]"}
-                  </p>
+                  <p className="text-white text-lg">{name || "[placeholder]"}</p>
                 )}
               </div>
 
               <div className="mb-4">
-                <label
-                  className="block text-base font-semibold text-white mb-1"
-                  htmlFor="email"
-                >
-                  Correo
-                </label>
+                <label className="block text-base font-semibold text-white mb-1" htmlFor="email">Correo</label>
                 {editMode ? (
                   <input
                     id="email"
@@ -164,11 +150,44 @@ export default function Perfil() {
                     placeholder="Escribe tu correo"
                   />
                 ) : (
-                  <p className="text-gray-400 text-lg">
-                    {email || "[placeholder]"}
-                  </p>
+                  <p className="text-gray-400 text-lg">{email || "[placeholder]"}</p>
                 )}
               </div>
+
+              {(editMode || number) && (
+                <div className="mb-4">
+                  <label className="block text-base font-semibold text-white mb-1" htmlFor="number">Teléfono</label>
+                  {editMode ? (
+                    <>
+                      <input
+                        id="number"
+                        type="text"
+                        className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
+                        value={number}
+                        onChange={(e) => setNumber(e.target.value)}
+                        placeholder="Ej: +56912345678"
+                      />
+                      {numberError && (
+                        <p className="text-red-500 text-sm mt-1">{numberError}</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="text-gray-400 text-lg">{number}</p>
+                      {whatsappURL && (
+                        <a
+                          href={whatsappURL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-white text-sm transition duration-200"
+                        >
+                          WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {isOwner && (
@@ -177,7 +196,7 @@ export default function Perfil() {
                   <>
                     <button
                       onClick={handleSaveChanges}
-                      className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
+                      className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
                     >
                       Guardar
                     </button>
@@ -185,6 +204,8 @@ export default function Perfil() {
                       onClick={() => {
                         setName(user?.name || "");
                         setEmail(user?.email || "");
+                        setNumber(user?.number || "");
+                        setNumberError("");
                         setEditMode(false);
                       }}
                       className="bg-neutral-700 hover:bg-neutral-800 px-4 py-2 rounded duration-200"
@@ -196,13 +217,13 @@ export default function Perfil() {
                   <>
                     <button
                       onClick={() => setEditMode(true)}
-                      className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
+                      className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
                     >
                       Editar perfil
                     </button>
                     <button
                       onClick={handleDeleteProfile}
-                      className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded duration-200 inline-block ml-2"
+                      className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded duration-200"
                     >
                       Eliminar perfil
                     </button>
@@ -210,7 +231,6 @@ export default function Perfil() {
                 )}
               </div>
             )}
-
           </div>
 
           {user?.role === "tutor" && (
