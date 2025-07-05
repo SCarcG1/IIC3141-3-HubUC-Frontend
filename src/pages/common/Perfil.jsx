@@ -34,6 +34,29 @@ export default function Perfil() {
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
   const isOwner = id === String(loggedInUser?.id);
 
+  const handleDeleteProfile = async () => {
+    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer.");
+
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`/users/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Limpiar datos del usuario y redirigir a la página de inicio o login
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error al eliminar el perfil:", err);
+      alert("Ocurrió un error al eliminar el perfil.");
+    }
+  };
+
+
   useEffect(() => {
     fetchUser();
   }, [id]);
@@ -170,15 +193,24 @@ export default function Perfil() {
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={() => setEditMode(true)}
-                    className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
-                  >
-                    Editar perfil
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setEditMode(true)}
+                      className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
+                    >
+                      Editar perfil
+                    </button>
+                    <button
+                      onClick={handleDeleteProfile}
+                      className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded duration-200 inline-block ml-2"
+                    >
+                      Eliminar perfil
+                    </button>
+                  </>
                 )}
               </div>
             )}
+
           </div>
 
           {user?.role === "tutor" && (
