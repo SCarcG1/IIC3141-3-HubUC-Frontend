@@ -165,7 +165,7 @@ export default function Clases({ initialLessons = null }) {
                       {course ? course.name : `Curso ID: ${lesson.course_id}`}
                     </div>
                     <div className="text-sm text-neutral-400">
-                      {course ? course.description : ""}
+                      {lesson ? lesson.description : ""}
                     </div>
                     <div className="text-sm text-neutral-400">
                       Tutor: {tutor ? tutor.name : `ID ${lesson.tutor_id}`}
