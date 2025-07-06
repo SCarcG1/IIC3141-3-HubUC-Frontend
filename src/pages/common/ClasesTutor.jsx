@@ -142,7 +142,7 @@ export default function ClasesTutor({ tutorId, user, isOwner }) {
       {showForm && selectedLesson && (
         <SolicitarClase
           lesson={selectedLesson}
-          courseCache={courses}
+          courseCache={courseCache}
           onClose={() => setShowForm(false)}
           onSubmit={handleConfirmarSolicitud}
         />

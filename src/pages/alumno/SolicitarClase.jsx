@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
 
-export default function SolicitarClase({ lesson, onClose, onSubmit, courseCache }) {
+export default function SolicitarClase({
+  lesson,
+  onClose,
+  onSubmit,
+  courseCache,
+}) {
   const [blocks, setBlocks] = useState([]);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [fecha, setFecha] = useState("");
@@ -58,52 +63,45 @@ export default function SolicitarClase({ lesson, onClose, onSubmit, courseCache 
 
   const formatNaiveDateTime = (date) => {
     const pad = (n) => n.toString().padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+      date.getSeconds()
+    )}`;
   };
 
-const handleReservar = async () => {
-  if (!selectedBlock || !fecha) {
-    alert("Selecciona fecha y bloque");
-    return;
-  }
+  const handleReservar = async () => {
+    if (!selectedBlock || !fecha) {
+      alert("Selecciona fecha y bloque");
+      return;
+    }
 
-  // Hora/minuto reales del bloque
-  const [startHour, startMinute] = getHourAndMinute(selectedBlock.start_hour);
-  const [endHour, endMinute] = getHourAndMinute(selectedBlock.end_hour);
+    // Hora/minuto reales del bloque
+    const [startHour, startMinute] = getHourAndMinute(selectedBlock.start_hour);
+    const [endHour, endMinute] = getHourAndMinute(selectedBlock.end_hour);
 
-  // Construye la fecha correcta sin timezone shift:
-  const [year, month, day] = fecha.split("-").map(Number);
-  const start = new Date(year, month - 1, day, startHour, startMinute, 0, 0);
-  const end = new Date(year, month - 1, day, endHour, endMinute, 0, 0);
+    // Construye la fecha correcta sin timezone shift:
+    const [year, month, day] = fecha.split("-").map(Number);
+    const start = new Date(year, month - 1, day, startHour, startMinute, 0, 0);
+    const end = new Date(year, month - 1, day, endHour, endMinute, 0, 0);
 
-  const formatNaiveDateTime = (date) => {
-    const pad = (n) => n.toString().padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  };
+    const token = localStorage.getItem("token");
 
-  const token = localStorage.getItem("token");
+    try {
+      const url = `/reservations/lesson/${
+        lesson.id
+      }?start_time=${encodeURIComponent(
+        formatNaiveDateTime(start)
+      )}&end_time=${encodeURIComponent(formatNaiveDateTime(end))}`;
 
-  try {
-    // ✅ Construye URL con query params explícitos:
-    const url = `/reservations/lesson/${lesson.id}?start_time=${encodeURIComponent(formatNaiveDateTime(start))}&end_time=${encodeURIComponent(formatNaiveDateTime(end))}`;
-
-    await api.post(
-      url,
-      null,
-      {
+      await api.post(url, null, {
         headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    onSubmit(lesson.id, formatNaiveDateTime(start));
-  } catch (error) {
-    console.error("Error al solicitar clase:", error);
-  }
-};
-
-
-
-
-
+      });
+      onSubmit(lesson.id, formatNaiveDateTime(start));
+    } catch (error) {
+      console.error("Error al solicitar clase:", error);
+    }
+  };
 
   const course = courseCache[lesson.course_id];
 
@@ -114,7 +112,9 @@ const handleReservar = async () => {
           Solicitar clase de {course?.name || "Clase"}
         </h2>
 
-        <label className="block mb-2" htmlFor="fecha">Fecha:</label>
+        <label className="block mb-2" htmlFor="fecha">
+          Fecha:
+        </label>
         <input
           id="fecha"
           type="date"
@@ -125,7 +125,9 @@ const handleReservar = async () => {
 
         <h3 className="mb-2">Bloques disponibles:</h3>
         {blocks.length === 0 ? (
-          <p className="text-neutral-400">No hay bloques disponibles para esta fecha.</p>
+          <p className="text-neutral-400">
+            No hay bloques disponibles para esta fecha.
+          </p>
         ) : (
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {blocks.map((b) => (
@@ -138,7 +140,8 @@ const handleReservar = async () => {
                     : "border-neutral-700 bg-neutral-800"
                 }`}
               >
-                {diasSemana[b.weekday]} de {formatHourString(b.start_hour)} a {formatHourString(b.end_hour)}
+                {diasSemana[b.weekday]} de {formatHourString(b.start_hour)} a{" "}
+                {formatHourString(b.end_hour)}
               </button>
             ))}
           </div>
