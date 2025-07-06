@@ -3,9 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import AppProtected from "./AppProtected";
 import Home from "./pages/common/Home";
-import AlumnoLogin from "./pages/alumno/AlumnoLogin";
-import TutorLogin from "./pages/tutor/TutorLogin";
-import Register from "./components/common/Register";
+import Login from "./components/common/Login";
 import Clases from "./pages/alumno/Clases";
 import Perfil from "./pages/common/Perfil";
 import TutorDashboard from "./pages/tutor/TutorDashboard";
@@ -23,9 +21,7 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
-      { path: "ingresar/alumno", element: <AlumnoLogin /> },
-      { path: "ingresar/tutor", element: <TutorLogin /> },
-      { path: "register", element: <Register /> },
+      { path: "ingresar/:role", element: <Login /> },
     ],
   },
   {
