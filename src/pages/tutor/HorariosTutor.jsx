@@ -19,6 +19,12 @@ export default function Horarios() {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 
+  const formatHourString = (timeStr) => {
+    // "08:00:00" => "08:00"
+    const parts = timeStr.split(":");
+    return `${parts[0]}:${parts[1]}`;
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este bloque?"))
       return;
@@ -95,8 +101,9 @@ export default function Horarios() {
               className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
             >
               <div className="font-semibold text-lg">
-                {diasSemana[h.weekday] || h.weekday} de {h.start_hour} a{" "}
-                {h.end_hour}
+                {diasSemana[h.weekday] || h.weekday} de{" "}
+                {formatHourString(h.start_hour)} a{" "}
+                {formatHourString(h.end_hour)}
               </div>
               <div className="text-sm text-neutral-400">
                 Vigente desde {new Date(h.valid_from).toLocaleDateString()}{" "}

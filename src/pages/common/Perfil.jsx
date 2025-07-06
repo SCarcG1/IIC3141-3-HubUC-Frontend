@@ -46,7 +46,7 @@ export default function Perfil() {
       // Limpiar datos del usuario y redirigir a la página de inicio o login
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       console.error("Error al eliminar el perfil:", err);
       alert("Ocurrió un error al eliminar el perfil.");

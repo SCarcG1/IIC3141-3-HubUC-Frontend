@@ -21,24 +21,26 @@ export default function SolicitarClase({
       navigate("/", { replace: true });
       return;
     }
-    const fetchBlocks = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const params = {};
-        if (fecha) {
-          params.on_date = fecha;
-        }
-        const res = await api.get(`/weekly-timeblocks/${lesson.tutor_id}`, {
+    if (fecha) {
+      fetchBlocks();
+    }
+  }, [fecha]);
+
+  const fetchBlocks = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await api.get(
+        `/timeblocks/${lesson.tutor_id}?on_date=${fecha}`,
+        {
           headers: { Authorization: `Bearer ${token}` },
-          params: params,
-        });
-        setBlocks(res.data);
-      } catch (err) {
-        console.error("Error cargando bloques:", err);
-      }
-    };
-    fetchBlocks();
-  }, [lesson.tutor_id, fecha]);
+        }
+      );
+      setBlocks(res.data);
+    } catch (err) {
+      console.error("Error cargando bloques:", err);
+    }
+  };
 
   const diasSemana = {
     Monday: "Lunes",
@@ -130,20 +132,27 @@ export default function SolicitarClase({
           </p>
         ) : (
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {blocks.map((b) => (
-              <button
-                key={b.id}
-                onClick={() => setSelectedBlock(b)}
-                className={`block w-full p-3 rounded border ${
-                  selectedBlock?.id === b.id
-                    ? "border-violet-500 bg-violet-600"
-                    : "border-neutral-700 bg-neutral-800"
-                }`}
-              >
-                {diasSemana[b.weekday]} de {formatHourString(b.start_hour)} a{" "}
-                {formatHourString(b.end_hour)}
-              </button>
-            ))}
+            {blocks.map((b, i) => {
+              const isSelected =
+                selectedBlock &&
+                b.weekday === selectedBlock.weekday &&
+                b.start_hour === selectedBlock.start_hour &&
+                b.end_hour === selectedBlock.end_hour;
+              return (
+                <button
+                  key={`${b.weekday}-${b.start_hour}-${b.end_hour}-${i}`}
+                  onClick={() => setSelectedBlock(b)}
+                  className={`block w-full p-3 rounded border ${
+                    isSelected
+                      ? "border-violet-500 bg-violet-600"
+                      : "border-neutral-700 bg-neutral-800"
+                  }`}
+                >
+                  {diasSemana[b.weekday]} de {formatHourString(b.start_hour)} a{" "}
+                  {formatHourString(b.end_hour)}
+                </button>
+              );
+            })}
           </div>
         )}
 

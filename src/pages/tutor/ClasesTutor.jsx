@@ -33,6 +33,7 @@ export default function ClasesTutor() {
           s.id === solicitud.id ? { ...s, status: "accepted" } : s
         )
       );
+      await handleUpdate(solicitud);
     } catch (error) {
       console.error(`Error al aceptar solicitud ${solicitud.id}:`, error);
     }
@@ -62,6 +63,18 @@ export default function ClasesTutor() {
     }
   };
 
+  const handleUpdate = async (aceptada) => {
+    const topeHorario = solicitudes.filter(
+      (s) =>
+        s.status === "pending" &&
+        s.id !== aceptada.id &&
+        s.start_time === aceptada.start_time
+    );
+    for (const solicitud of topeHorario) {
+      await handleRechazar(solicitud);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -70,22 +83,23 @@ export default function ClasesTutor() {
       navigate("/", { replace: true });
       return;
     }
-    const fetchSolicitudes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/reservations/tutor", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSolicitudes(res.data);
-      } catch (error) {
-        console.error("Error al obtener solicitudes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchSolicitudes();
   }, []);
+
+  const fetchSolicitudes = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.get("/reservations/tutor", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSolicitudes(res.data);
+    } catch (error) {
+      console.error("Error al obtener solicitudes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const pendientes = solicitudes.filter((s) => s.status === "pending");
   const aceptadas = solicitudes.filter((s) => s.status === "accepted");
