@@ -24,11 +24,10 @@ export default function Clases({ initialLessons = null }) {
     setShowForm(true);
   };
 
-const handleConfirmarSolicitud = () => {
-  alert("Clase solicitada exitosamente");
-  setShowForm(false);
-};
-
+  const handleConfirmarSolicitud = () => {
+    alert("Clase solicitada exitosamente");
+    setShowForm(false);
+  };
 
   const handleChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -112,10 +111,10 @@ const handleConfirmarSolicitud = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Clases disponibles</h1>
         <button
-          onClick={() => navigate("/dashboard/alumno")}
+          onClick={() => navigate(-1)}
           className="bg-neutral-700 hover:bg-neutral-800 px-4 py-2 rounded duration-200"
         >
-          ← Volver al panel principal
+          ← Volver
         </button>
       </div>
 
@@ -200,12 +199,12 @@ const handleConfirmarSolicitud = () => {
         </div>
       )}
       {showForm && selectedLesson && (
-      <SolicitarClase
-        lesson={selectedLesson}
-        courseCache={courseCache}
-        onClose={() => setShowForm(false)}
-        onSubmit={handleConfirmarSolicitud}
-      />
+        <SolicitarClase
+          lesson={selectedLesson}
+          courseCache={courseCache}
+          onClose={() => setShowForm(false)}
+          onSubmit={handleConfirmarSolicitud}
+        />
       )}
     </div>
   );

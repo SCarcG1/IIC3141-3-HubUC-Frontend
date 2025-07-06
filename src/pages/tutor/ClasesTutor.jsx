@@ -96,10 +96,10 @@ export default function ClasesTutor() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Solicitudes de clase</h1>
         <button
-          onClick={() => navigate("/dashboard/tutor")}
+          onClick={() => navigate(-1)}
           className="bg-neutral-700 hover:bg-neutral-800 px-4 py-2 rounded duration-200"
         >
-          ← Volver al dashboard
+          ← Volver
         </button>
       </div>
 
