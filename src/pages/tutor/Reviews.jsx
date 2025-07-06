@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../../services/api";
 import ReviewCard from "./ReviewCard";
 
-export default function Reviews({ tutorId, isOwner }) {
+export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
   const [reviews, setReviews] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -11,14 +11,57 @@ export default function Reviews({ tutorId, isOwner }) {
   });
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
 
+  // cambiar mockReviews a reviews NO OLVIDAR
+  const mockReviews = [
+    {
+      reviewerName: "Carlos R.",
+      rating: 5,
+      comment: "Excelente tutor, muy claro.",
+      date: "2024-10-15",
+    },
+    {
+      reviewerName: "Ana P.",
+      rating: 4.5,
+      comment: "Buena clase, me ayudó bastante.",
+      date: "2024-11-01",
+    },
+    {
+      reviewerName: "Luis M.",
+      rating: 4,
+      comment: "Explica bien pero podría usar más ejemplos.",
+      date: "2024-12-10",
+    },
+    {
+      reviewerName: "Camila V.",
+      rating: 2.5,
+      comment: "Top. Lo recomiendo totalmente.",
+      date: "2025-01-22",
+    },
+    {
+      reviewerName: "Javiera C.",
+      rating: 3,
+      comment: "Más o menos, fue muy rápido.",
+      date: "2025-02-08",
+    },
+  ];
+
   useEffect(() => {
     fetchReviews();
   }, [tutorId]);
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`/reviews/tutor/${tutorId}`);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`/reviews/tutor/${tutorId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setReviews(response.data);
+      if (onAverageCalculated && response.data.length > 0) {
+        const avg =
+          response.data.reduce((sum, r) => sum + r.rating, 0) /
+          response.data.length;
+        onAverageCalculated(Number(avg.toFixed(1))); // Envia el promedio al perfil
+      }
     } catch (error) {
       console.error("Error al cargar reviews:", error);
     }
@@ -27,8 +70,12 @@ export default function Reviews({ tutorId, isOwner }) {
   // Busqueda de reservation_id en la API
   const fetchReservationId = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
-        "/reservations/tutor/{tutorId}/student/{loggedInUser.id}"
+        `/reservations/tutor/${tutorId}/student/${loggedInUser.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       const reservation = response.data;
       return reservation ? reservation.id : null;
@@ -71,7 +118,7 @@ export default function Reviews({ tutorId, isOwner }) {
   };
 
   return (
-    <div className="w-full h-full min-h-[300px] bg-neutral-800 p-6 rounded-lg border border-neutral-700">
+    <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 h-full min-h-[300px]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Reviews</h3>
         {!isOwner && (
