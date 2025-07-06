@@ -9,41 +9,9 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
     content: "",
     rating: 0,
   });
+  const [editing, setEditing] = useState(false);
+  const [userReview, setUserReview] = useState(null);
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
-
-  // cambiar mockReviews a reviews NO OLVIDAR
-  const mockReviews = [
-    {
-      reviewerName: "Carlos R.",
-      rating: 5,
-      comment: "Excelente tutor, muy claro.",
-      date: "2024-10-15",
-    },
-    {
-      reviewerName: "Ana P.",
-      rating: 4.5,
-      comment: "Buena clase, me ayudó bastante.",
-      date: "2024-11-01",
-    },
-    {
-      reviewerName: "Luis M.",
-      rating: 4,
-      comment: "Explica bien pero podría usar más ejemplos.",
-      date: "2024-12-10",
-    },
-    {
-      reviewerName: "Camila V.",
-      rating: 2.5,
-      comment: "Top. Lo recomiendo totalmente.",
-      date: "2025-01-22",
-    },
-    {
-      reviewerName: "Javiera C.",
-      rating: 3,
-      comment: "Más o menos, fue muy rápido.",
-      date: "2025-02-08",
-    },
-  ];
 
   useEffect(() => {
     fetchReviews();
@@ -52,61 +20,119 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
   const fetchReviews = async () => {
     try {
       const token = localStorage.getItem("token");
+
       const response = await axios.get(`/reviews/tutor/${tutorId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setReviews(response.data);
-      if (onAverageCalculated && response.data.length > 0) {
+      const reviewsData = response.data;
+      const reservationsRes = await axios.get(`/reservations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const allReservations = reservationsRes.data;
+
+      const enrichedReviews = await Promise.all(
+        reviewsData.map(async (review) => {
+          const reservation = allReservations.find(
+            (r) => r.id === review.reservation_id
+          );
+
+          if (!reservation) {
+            return { ...review, reviewer: null };
+          }
+
+          try {
+            const userRes = await axios.get(
+              `/users/${reservation.student_id}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+
+            return { ...review, reviewer: userRes.data };
+          } catch (error) {
+            console.error("Error obteniendo reviewer:", error);
+            return { ...review, reviewer: null };
+          }
+        })
+      );
+
+      setReviews(enrichedReviews);
+
+      const reservation = await fetchReservation();
+      const existingReview = enrichedReviews.find(
+        (r) => r.reservation_id === reservation?.id
+      );
+      setUserReview(existingReview);
+
+      if (onAverageCalculated && enrichedReviews.length > 0) {
         const avg =
-          response.data.reduce((sum, r) => sum + r.rating, 0) /
-          response.data.length;
-        onAverageCalculated(Number(avg.toFixed(1))); // Envia el promedio al perfil
+          enrichedReviews.reduce((sum, r) => sum + r.rating, 0) /
+          enrichedReviews.length;
+        onAverageCalculated(Number(avg.toFixed(1)));
       }
     } catch (error) {
       console.error("Error al cargar reviews:", error);
     }
   };
 
-  // Busqueda de reservation_id en la API
-  const fetchReservationId = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `/reservations/tutor/${tutorId}/student/${loggedInUser.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const reservation = response.data;
-      return reservation ? reservation.id : null;
-    } catch (error) {
-      console.error("Error al buscar solicitud:", error);
-      return null;
+  const fetchReservation = async () => {
+    if (!isOwner) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `/reservations/tutor/${tutorId}/student/${loggedInUser.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const reservation = response.data[0];
+        return reservation ? reservation : null;
+      } catch (error) {
+        console.error("Error al buscar solicitud:", error);
+        return null;
+      }
     }
+    return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const reservationId = await fetchReservationId();
-    if (!reservationId) {
-      alert(
-        "No tienes una solicitud válida con este tutor para dejar una review."
-      );
-      return;
-    }
+    if (!editing) {
+      const reservation = await fetchReservation();
+      if (!reservation) {
+        alert(
+          "No tienes una solicitud válida con este tutor para dejar una review."
+        );
+        return;
+      }
 
-    try {
-      await axios.post(`/reviews`, {
-        reservation_id: reservationId,
-        content: formData.content,
-        rating: formData.rating,
-      });
-      setFormData({ rating: 0, comment: "" });
-      setShowForm(false);
-      fetchReviews();
-    } catch (error) {
-      console.error("Error al enviar review:", error);
+      try {
+        await axios.post(`/reviews`, {
+          reservation_id: reservation.id,
+          content: formData.content,
+          rating: formData.rating,
+        });
+        setFormData({ rating: 0, content: "" });
+        setShowForm(false);
+        fetchReviews();
+      } catch (error) {
+        console.error("Error al enviar review:", error);
+      }
+    } else {
+      try {
+        await axios.patch(`/reviews/${userReview.id}`, {
+          content: formData.content,
+          rating: formData.rating,
+        });
+      } catch (error) {
+        console.error("Error al editar review:", error);
+        return;
+      }
     }
+    setFormData({ rating: 0, content: "" });
+    setShowForm(false);
+    setEditing(false);
+    fetchReviews();
   };
 
   const handleChange = (e) => {
@@ -117,17 +143,60 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
     }));
   };
 
+  const handleDeleteReview = (id) => {
+    const confirmed = window.confirm("¿Estás seguro de eliminar tu review?");
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      axios.delete(`/reviews/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+      setUserReview(null);
+    } catch (error) {
+      console.error("Error al eliminar review:", error);
+    }
+  };
+
+  const openEditForm = () => {
+    setFormData({ rating: userReview.rating, content: userReview.content });
+    setEditing(true);
+    setShowForm(true);
+  };
+
   return (
     <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 h-full min-h-[300px]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Reviews</h3>
-        {!isOwner && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
-          >
-            Dejar una Review
-          </button>
+        {!isOwner && loggedInUser?.role === "student" && (
+          <div className="mt-2 flex gap-2">
+            {!userReview ? (
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
+              >
+                Dejar una Review
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={openEditForm}
+                  className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200"
+                >
+                  Editar Review
+                </button>
+                <button
+                  onClick={() => handleDeleteReview(userReview.id)}
+                  className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded duration-200"
+                >
+                  Eliminar
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
       {reviews.length === 0 ? (
@@ -142,7 +211,7 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md border border-neutral-700 shadow-xl">
             <h3 className="text-xl font-semibold text-white mb-4">
-              Nueva Review
+              {editing ? "Editar Review" : "Nueva Review"}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,9 +236,9 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
                   Comentario:
                 </label>
                 <textarea
-                  name="comment"
+                  name="content"
                   rows="3"
-                  value={formData.comment}
+                  value={formData.content}
                   onChange={handleChange}
                   required
                   className="w-full p-2 rounded-lg bg-neutral-700 text-white border border-neutral-600"
@@ -180,7 +249,11 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditing(false);
+                    setFormData({ content: "", rating: 0 });
+                  }}
                   className="bg-neutral-700 hover:bg-neutral-800 px-4 py-2 rounded duration-200"
                 >
                   Cancelar
@@ -190,7 +263,7 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
                   type="submit"
                   className="bg-violet-600 hover:bg-violet-800 px-3 py-1 rounded duration-200 inline-block"
                 >
-                  Enviar Review
+                  {editing ? "Actualizar Review" : "Enviar Review"}
                 </button>
               </div>
             </form>
