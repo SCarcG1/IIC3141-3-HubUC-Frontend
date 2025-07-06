@@ -2,16 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "../../services/api";
 import { useParams, useNavigate } from "react-router-dom";
 import Reviews from "../tutor/Reviews.jsx";
-
-// Placeholder contenedor Clases
-function Clases() {
-  return (
-    <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 h-full min-h-[300px]">
-      <h3 className="text-lg font-semibold mb-2 text-white">Clases</h3>
-      <p className="text-gray-400">Aquí irán las clases del tutor...</p>
-    </div>
-  );
-}
+import ClasesTutor from "./ClasesTutor.jsx";
+import StarRating from "../../components/common/StarRating.jsx";
 
 export default function Perfil() {
   const { id } = useParams();
@@ -30,12 +22,15 @@ export default function Perfil() {
     student: "Alumno",
   };
   const displayRole = roleNames[user?.role] || user?.role || "[placeholder]";
+  const [averageRating, setAverageRating] = useState(null);
 
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
   const isOwner = id === String(loggedInUser?.id);
 
   const handleDeleteProfile = async () => {
-    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer.");
+    const confirmed = window.confirm(
+      "¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer."
+    );
 
     if (!confirmed) return;
 
@@ -56,8 +51,12 @@ export default function Perfil() {
     }
   };
 
-
   useEffect(() => {
+    // Redirección si no hay token
+    if (!token) {
+      navigate("/", { replace: true });
+      return;
+    }
     fetchUser();
   }, [id]);
 
@@ -118,10 +117,25 @@ export default function Perfil() {
 
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex flex-col gap-6 flex-[2]">
-          <div className="bg-neutral-800 pt-10 px-6 pb-6 rounded-lg border border-neutral-700 flex-1 max-h-[400px] flex flex-col relative">
-            <span className="absolute top-4 right-4 bg-purple-600 text-white text-xs px-3 py-1 rounded-full font-semibold select-none z-10">
-              {displayRole}
-            </span>
+          <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 h-full min-h-[300px]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white leading-none">
+                Datos personales
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="bg-indigo-500 text-white text-xs px-3 py-[1px] rounded-full font-semibold select-none">
+                  {displayRole}
+                </span>
+                {averageRating && (
+                  <div className="flex items-center gap-2">
+                    <StarRating rating={averageRating} />
+                    <span className="text-sm text-white font-semibold">
+                      {averageRating} / 5
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="overflow-auto mb-4">
               <div className="mb-4">
@@ -210,19 +224,26 @@ export default function Perfil() {
                 )}
               </div>
             )}
-
           </div>
 
           {user?.role === "tutor" && (
             <div className="flex-[3]">
-              <Reviews tutorId={user?.id} isOwner={isOwner} />
+              <Reviews
+                tutorId={user?.id}
+                isOwner={isOwner}
+                onAverageCalculated={(avg) => setAverageRating(avg)}
+              />
             </div>
           )}
         </div>
 
         {user?.role === "tutor" && (
           <div className="flex-[3]">
-            <Clases />
+            <ClasesTutor
+              tutorId={user.id}
+              user={loggedInUser}
+              isOwner={isOwner}
+            />
           </div>
         )}
       </div>

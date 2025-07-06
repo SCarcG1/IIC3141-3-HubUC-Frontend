@@ -1,4 +1,4 @@
-import React from "react";
+import StarRating from "../../components/common/StarRating";
 
 export default function ReviewCard({ review }) {
   const { reviewerName, rating, comment, date } = review;
@@ -11,23 +11,10 @@ export default function ReviewCard({ review }) {
           {new Date(date).toLocaleDateString()}
         </span>
       </div>
-
-      <div className="flex items-center mb-2">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <Star
-            key={index}
-            size={18}
-            className={
-              index < rating
-                ? "text-yellow-400 fill-yellow-400"
-                : "text-neutral-500"
-            }
-          />
-        ))}
-      </div>
-
-      {/* Comment */}
       <p className="text-neutral-300">{comment}</p>
+      <div className="text-right">
+        <StarRating rating={rating} />
+      </div>
     </div>
   );
 }
