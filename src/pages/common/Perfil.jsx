@@ -5,7 +5,6 @@ import Reviews from "../tutor/Reviews.jsx";
 import ClasesTutor from "./ClasesTutor.jsx";
 import StarRating from "../../components/common/StarRating.jsx";
 
-
 export default function Perfil() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,9 +28,6 @@ export default function Perfil() {
   };
   const displayRole = roleNames[user?.role] || user?.role || "[placeholder]";
   const [averageRating, setAverageRating] = useState(null);
-
-  const loggedInUser = JSON.parse(localStorage.getItem("user"));
-  const isOwner = id === String(loggedInUser?.id);
 
   const handleDeleteProfile = async () => {
     const confirmed = window.confirm(
@@ -66,7 +62,6 @@ export default function Perfil() {
     fetchUser();
   }, [id]);
 
-
   const fetchUser = async () => {
     setLoading(true);
     try {
@@ -89,7 +84,9 @@ export default function Perfil() {
 
     const cleaned = number.trim();
     if (cleaned && !/^\+569\d{8}$/.test(cleaned)) {
-      setNumberError("El número debe comenzar con +569 y tener 12 caracteres en total.");
+      setNumberError(
+        "El número debe comenzar con +569 y tener 12 caracteres en total."
+      );
       return;
     }
     setNumberError("");
@@ -106,23 +103,6 @@ export default function Perfil() {
     }
   };
 
-  const handleDeleteProfile = async () => {
-    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar tu perfil? Esta acción no se puede deshacer.");
-    if (!confirmed) return;
-
-    try {
-      await axios.delete(`/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/");
-    } catch (err) {
-      console.error("Error al eliminar el perfil:", err);
-      alert("Ocurrió un error al eliminar el perfil.");
-    }
-  };
-
   useEffect(() => {
     fetchUser();
   }, [id]);
@@ -130,7 +110,9 @@ export default function Perfil() {
   if (loading) return <p className="text-white p-8">Cargando perfil...</p>;
   if (!user) return <p className="text-white p-8">Usuario no encontrado</p>;
 
-  const whatsappURL = number ? `https://wa.me/${number.replace(/\D/g, "")}` : null;
+  const whatsappURL = number
+    ? `https://wa.me/${number.replace(/\D/g, "")}`
+    : null;
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-8">
@@ -170,7 +152,12 @@ export default function Perfil() {
 
             <div className="overflow-auto mb-4">
               <div className="mb-4">
-                <label className="block text-base font-semibold text-white mb-1" htmlFor="name">Nombre</label>
+                <label
+                  className="block text-base font-semibold text-white mb-1"
+                  htmlFor="name"
+                >
+                  Nombre
+                </label>
                 {editMode ? (
                   <input
                     id="name"
@@ -181,12 +168,19 @@ export default function Perfil() {
                     placeholder="Escribe tu nombre"
                   />
                 ) : (
-                  <p className="text-white text-lg">{name || "[placeholder]"}</p>
+                  <p className="text-white text-lg">
+                    {name || "[placeholder]"}
+                  </p>
                 )}
               </div>
 
               <div className="mb-4">
-                <label className="block text-base font-semibold text-white mb-1" htmlFor="email">Correo</label>
+                <label
+                  className="block text-base font-semibold text-white mb-1"
+                  htmlFor="email"
+                >
+                  Correo
+                </label>
                 {editMode ? (
                   <input
                     id="email"
@@ -197,13 +191,20 @@ export default function Perfil() {
                     placeholder="Escribe tu correo"
                   />
                 ) : (
-                  <p className="text-gray-400 text-lg">{email || "[placeholder]"}</p>
+                  <p className="text-gray-400 text-lg">
+                    {email || "[placeholder]"}
+                  </p>
                 )}
               </div>
 
               {(editMode || number) && (
                 <div className="mb-4">
-                  <label className="block text-base font-semibold text-white mb-1" htmlFor="number">Teléfono</label>
+                  <label
+                    className="block text-base font-semibold text-white mb-1"
+                    htmlFor="number"
+                  >
+                    Teléfono
+                  </label>
                   {editMode ? (
                     <>
                       <input
@@ -215,7 +216,9 @@ export default function Perfil() {
                         placeholder="Ej: +56912345678"
                       />
                       {numberError && (
-                        <p className="text-red-500 text-sm mt-1">{numberError}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {numberError}
+                        </p>
                       )}
                     </>
                   ) : (
