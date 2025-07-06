@@ -196,6 +196,12 @@ export default function AlumnoSolicitudes() {
                         >
                           Ver perfil tutor
                         </button>
+                        <button
+                          onClick={() => handleEliminar(s.id)}
+                          className="bg-violet-50 text-violet-600 hover:bg-red-400 hover:text-violet-50 px-4 py-2 rounded duration-200"
+                        >
+                          Eliminar
+                        </button>
                       </div>
                     </div>
                   );
