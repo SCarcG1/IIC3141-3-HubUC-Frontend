@@ -216,10 +216,14 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white">
+                <label
+                  className="block text-sm font-medium text-white"
+                  htmlFor="rating"
+                >
                   Rating (1 a 5 estrellas):
                 </label>
                 <input
+                  id="rating"
                   type="number"
                   name="rating"
                   min="1"
@@ -232,10 +236,14 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white">
+                <label
+                  className="block text-sm font-medium text-white"
+                  htmlFor="content"
+                >
                   Comentario:
                 </label>
                 <textarea
+                  id="content"
                   name="content"
                   rows="3"
                   value={formData.content}

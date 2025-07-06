@@ -152,89 +152,110 @@ export default function Perfil() {
 
             <div className="overflow-auto mb-4">
               <div className="mb-4">
-                <label
-                  className="block text-base font-semibold text-white mb-1"
-                  htmlFor="name"
-                >
-                  Nombre
-                </label>
                 {editMode ? (
-                  <input
-                    id="name"
-                    type="text"
-                    className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Escribe tu nombre"
-                  />
+                  <>
+                    <label
+                      className="block text-base font-semibold text-white mb-1"
+                      htmlFor="name"
+                    >
+                      Nombre
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Escribe tu nombre"
+                    />
+                  </>
                 ) : (
-                  <p className="text-white text-lg">
-                    {name || "[placeholder]"}
-                  </p>
+                  <>
+                    <p className="block text-base font-semibold text-white mb-1">
+                      Nombre
+                    </p>
+                    <p className="text-white text-lg">
+                      {name || "[placeholder]"}
+                    </p>
+                  </>
                 )}
               </div>
 
               <div className="mb-4">
-                <label
-                  className="block text-base font-semibold text-white mb-1"
-                  htmlFor="email"
-                >
-                  Correo
-                </label>
                 {editMode ? (
-                  <input
-                    id="email"
-                    type="email"
-                    className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Escribe tu correo"
-                  />
+                  <>
+                    <label
+                      className="block text-base font-semibold text-white mb-1"
+                      htmlFor="email"
+                    >
+                      Correo
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Escribe tu correo"
+                    />
+                  </>
                 ) : (
-                  <p className="text-gray-400 text-lg">
-                    {email || "[placeholder]"}
-                  </p>
+                  <>
+                    <p className="block text-base font-semibold text-white mb-1">
+                      Correo
+                    </p>
+                    <p className="text-gray-400 text-lg">
+                      {email || "[placeholder]"}
+                    </p>
+                  </>
                 )}
               </div>
 
               {(editMode || number) && (
                 <div className="mb-4">
-                  <label
-                    className="block text-base font-semibold text-white mb-1"
-                    htmlFor="number"
-                  >
-                    Teléfono
-                  </label>
                   {editMode ? (
                     <>
-                      <input
-                        id="number"
-                        type="text"
-                        className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
-                        value={number}
-                        onChange={(e) => setNumber(e.target.value)}
-                        placeholder="Ej: +56912345678"
-                      />
-                      {numberError && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {numberError}
-                        </p>
-                      )}
+                      <label
+                        className="block text-base font-semibold text-white mb-1"
+                        htmlFor="number"
+                      >
+                        Teléfono
+                      </label>
+                      <>
+                        <input
+                          id="number"
+                          type="text"
+                          className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
+                          value={number}
+                          onChange={(e) => setNumber(e.target.value)}
+                          placeholder="Ej: +56912345678"
+                        />
+                        {numberError && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {numberError}
+                          </p>
+                        )}
+                      </>
                     </>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <p className="text-gray-400 text-lg">{number}</p>
-                      {whatsappURL && (
-                        <a
-                          href={whatsappURL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-white text-sm transition duration-200"
-                        >
-                          WhatsApp
-                        </a>
-                      )}
-                    </div>
+                    <>
+                      <p className="block text-base font-semibold text-white mb-1">
+                        Teléfono
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-gray-400 text-lg">{number}</p>
+                        {whatsappURL && (
+                          <a
+                            href={whatsappURL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-white text-sm transition duration-200"
+                          >
+                            WhatsApp
+                          </a>
+                        )}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
