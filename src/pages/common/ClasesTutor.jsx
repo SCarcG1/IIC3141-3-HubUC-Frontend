@@ -26,7 +26,6 @@ export default function ClasesTutor({ tutorId, user, isOwner }) {
     try {
       const res = await axios.get("/courses");
       setCourses(res.data);
-      console.log("Cursos cargados:", courses);
       const cache = {};
       res.data.forEach((c) => (cache[c.id] = c));
       setCourseCache(cache);
