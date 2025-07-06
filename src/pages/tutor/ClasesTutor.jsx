@@ -41,8 +41,8 @@ export default function ClasesTutor() {
   const handleRechazar = async (solicitud) => {
     try {
       const token = localStorage.getItem("token");
-      await api.put(
-        `/reservations/${solicitud.id}`,
+      await api.patch(
+        `/reservations/tutor/${solicitud.id}`,
         {
           private_lesson_id: solicitud.private_lesson_id,
           student_id: solicitud.student_id,

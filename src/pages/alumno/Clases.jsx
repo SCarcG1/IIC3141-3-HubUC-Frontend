@@ -37,7 +37,6 @@ export default function Clases({ initialLessons = null }) {
     try {
       const res = await axios.get("/courses");
       setCourses(res.data);
-      console.log("Cursos cargados:", courses);
       const cache = {};
       res.data.forEach((c) => (cache[c.id] = c));
       setCourseCache(cache);
@@ -166,7 +165,7 @@ export default function Clases({ initialLessons = null }) {
                       {course ? course.name : `Curso ID: ${lesson.course_id}`}
                     </div>
                     <div className="text-sm text-neutral-400">
-                      {course ? course.description : ""}
+                      {lesson ? lesson.description : ""}
                     </div>
                     <div className="text-sm text-neutral-400">
                       Tutor: {tutor ? tutor.name : `ID ${lesson.tutor_id}`}
