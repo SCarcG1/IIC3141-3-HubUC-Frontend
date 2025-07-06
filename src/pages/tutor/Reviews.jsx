@@ -99,7 +99,7 @@ export default function Reviews({ tutorId, isOwner, onAverageCalculated }) {
     e.preventDefault();
     if (!editing) {
       const reservation = await fetchReservation();
-      if (!reservation.id) {
+      if (!reservation) {
         alert(
           "No tienes una solicitud válida con este tutor para dejar una review."
         );
