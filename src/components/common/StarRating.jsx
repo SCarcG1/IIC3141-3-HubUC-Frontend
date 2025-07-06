@@ -4,10 +4,12 @@ export default function StarRating({ rating }) {
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
   return (
-    <span className="text-yellow-400 text-sm font-semibold select-none">
-      {"★".repeat(fullStars)}
-      {hasHalf ? "⯪" : ""}
-      {"☆".repeat(emptyStars)}
+    <span className="text-lg font-semibold select-none tracking-wider">
+      <span className="text-yellow-400">
+        {"★".repeat(fullStars)}
+        {hasHalf ? "⯪" : ""}
+      </span>
+      <span className="text-neutral-500">{"☆".repeat(emptyStars)}</span>
     </span>
   );
 }
