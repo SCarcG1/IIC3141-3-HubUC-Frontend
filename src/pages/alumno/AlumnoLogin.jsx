@@ -40,7 +40,9 @@ export default function AlumnoLogin() {
       if (token) {
         if (isLogin && role !== "student") {
           // ⚠️ Usuario intenta entrar al login de alumno con cuenta de tutor
-          alert("Esta sección es solo para estudiantes. Usa la vista de login correspondiente.");
+          alert(
+            "Esta sección es solo para estudiantes. Usa la vista de login correspondiente."
+          );
           return; // No guardar nada ni redirigir
         }
 
@@ -54,13 +56,13 @@ export default function AlumnoLogin() {
         navigate("/dashboard/alumno");
       }
     } catch (err) {
-      const detail = err.response?.data?.detail || "Error inesperado";
-      setMessage(
-        `❌ ${typeof detail === "string" ? detail : JSON.stringify(detail)}`
-      );
+      if (err.response?.status === 401) {
+        setMessage(`❌ Correo o contraseña incorrectos`);
+      } else {
+        setMessage(`❌ Error inesperado. Intente nuevamente`);
+      }
     }
   };
-
 
   return (
     <div className="flex flex-col items-center gap-6 bg-neutral-950 min-h-screen justify-center p-8 text-white">

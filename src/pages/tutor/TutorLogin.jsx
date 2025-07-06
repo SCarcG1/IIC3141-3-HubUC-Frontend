@@ -39,13 +39,15 @@ export default function TutorLogin() {
 
       if (token) {
         if (isLogin && role !== "tutor") {
-          alert("Esta sección es solo para tutores. Usa la vista de login correspondiente.");
+          alert(
+            "Esta sección es solo para tutores. Usa la vista de login correspondiente."
+          );
           return; // No guardes nada ni redirijas
         }
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        localStorage.setItem('role', role);
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("role", role);
       }
 
       setMessage(`✅ ${isLogin ? "Ingreso" : "Registro"} exitoso`);
@@ -53,13 +55,13 @@ export default function TutorLogin() {
         navigate("/dashboard/tutor");
       }
     } catch (err) {
-      const detail = err.response?.data?.detail || "Error inesperado";
-      setMessage(
-        `❌ ${typeof detail === "string" ? detail : JSON.stringify(detail)}`
-      );
+      if (err.response?.status === 401) {
+        setMessage(`❌ Correo o contraseña incorrectos`);
+      } else {
+        setMessage(`❌ Error inesperado. Intente nuevamente`);
+      }
     }
   };
-
 
   return (
     <div className="flex flex-col items-center gap-6 bg-neutral-950 min-h-screen justify-center p-8 text-white">
