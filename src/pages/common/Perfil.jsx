@@ -139,7 +139,7 @@ export default function Perfil() {
                 <span className="bg-indigo-500 text-white text-xs px-3 py-[1px] rounded-full font-semibold select-none">
                   {displayRole}
                 </span>
-                {averageRating && (
+                {user.role === "tutor" && averageRating && (
                   <div className="flex items-center gap-2">
                     <StarRating rating={averageRating} />
                     <span className="text-sm text-white font-semibold">
