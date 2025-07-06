@@ -1,27 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../services/api'; // Ajusta según tu estructura de carpetas
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api"; // Ajusta según tu estructura de carpetas
 
 export default function Horarios() {
   const navigate = useNavigate();
   const [horarios, setHorarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const diasSemana = {
-  Monday: 'Lunes',
-  Tuesday: 'Martes',
-  Wednesday: 'Miércoles',
-  Thursday: 'Jueves',
-  Friday: 'Viernes',
-  Saturday: 'Sábado',
-  Sunday: 'Domingo',
-};
+    Monday: "Lunes",
+    Tuesday: "Martes",
+    Wednesday: "Miércoles",
+    Thursday: "Jueves",
+    Friday: "Viernes",
+    Saturday: "Sábado",
+    Sunday: "Domingo",
+  };
 
-
-  const user = JSON.parse(localStorage.getItem('user'));
-  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Estás seguro de que quieres eliminar este bloque?")) return;
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este bloque?"))
+      return;
 
     try {
       await api.delete(`/weekly-timeblocks/${id}`, {
@@ -38,7 +38,6 @@ export default function Horarios() {
   };
 
   useEffect(() => {
-
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
     // Redirección si no hay token o el rol no es 'tutor'
@@ -55,7 +54,7 @@ export default function Horarios() {
         });
         setHorarios(res.data);
       } catch (err) {
-        console.error('Error al obtener horarios:', err);
+        console.error("Error al obtener horarios:", err);
       } finally {
         setLoading(false);
       }
@@ -70,16 +69,16 @@ export default function Horarios() {
         <h1 className="text-2xl font-bold">Mis horarios disponibles</h1>
         <div className="flex gap-4">
           <button
-            onClick={() => navigate('/horarios/nuevo')}
+            onClick={() => navigate("/horarios/nuevo")}
             className="bg-violet-600 hover:bg-violet-800 px-4 py-2 rounded duration-200"
           >
             + Crear nuevo horario
           </button>
           <button
-            onClick={() => navigate('/dashboard/tutor')}
+            onClick={() => navigate(-1)}
             className="bg-neutral-700 hover:bg-neutral-800 px-4 py-2 rounded duration-200"
           >
-            ← Volver al dashboard
+            ← Volver
           </button>
         </div>
       </div>
@@ -96,20 +95,23 @@ export default function Horarios() {
               className="bg-neutral-800 p-4 rounded-lg border border-neutral-700"
             >
               <div className="font-semibold text-lg">
-                {diasSemana[h.weekday] || h.weekday} de {h.start_hour} a {h.end_hour}
+                {diasSemana[h.weekday] || h.weekday} de {h.start_hour} a{" "}
+                {h.end_hour}
               </div>
               <div className="text-sm text-neutral-400">
-                Vigente desde {new Date(h.valid_from).toLocaleDateString()} hasta{' '}
-                {new Date(h.valid_until).toLocaleDateString()}
+                Vigente desde {new Date(h.valid_from).toLocaleDateString()}{" "}
+                hasta {new Date(h.valid_until).toLocaleDateString()}
               </div>
               <div className="mt-2 flex gap-2">
-                <button onClick={() => handleDelete(h.id)} className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded text-sm">
+                <button
+                  onClick={() => handleDelete(h.id)}
+                  className="bg-red-600 hover:bg-red-800 px-3 py-1 rounded text-sm"
+                >
                   Eliminar
                 </button>
               </div>
             </div>
           ))}
-
         </div>
       )}
     </div>
