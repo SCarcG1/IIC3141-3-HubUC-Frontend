@@ -6,7 +6,7 @@ export default function TutorDashboard() {
       roleCheck="tutor"
       apiEndpoint="/reservations/tutor"
       linkSolicitudes="/solicitudes/tutor"
-      mostrarSoloClasesAceptadas={false}
+      mostrarSoloClasesAceptadas={true}
       acciones={[
         {
           title: "Mis clases",

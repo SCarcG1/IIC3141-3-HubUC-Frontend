@@ -150,7 +150,13 @@ export default function ClasesTutor() {
                           Clase: {s.private_lesson.course.name}
                         </div>
                         <div className="text-sm text-neutral-400">
-                          Nombre Estudiante: {s.student.name}
+                          Nombre Estudiante: {
+                            s.student
+                            ?
+                            s.student.name
+                            :
+                            "[Eliminado]"
+                          }
                         </div>
                         <div className="text-sm text-neutral-400">
                           Fecha: {fecha}
@@ -223,7 +229,13 @@ export default function ClasesTutor() {
                           Clase: {s.private_lesson.course.name}
                         </div>
                         <div className="text-sm text-neutral-400">
-                          Nombre Estudiante: {s.student.name}
+                          Nombre Estudiante: {
+                            s.student
+                            ?
+                            s.student.name
+                            :
+                            "[Eliminado]"
+                          }
                         </div>
                         <div className="text-sm text-neutral-400">
                           Fecha: {fecha}
@@ -282,7 +294,13 @@ export default function ClasesTutor() {
                           Clase: {s.private_lesson.course.name}
                         </div>
                         <div className="text-sm text-neutral-400">
-                          Nombre Estudiante: {s.student.name}
+                          Nombre Estudiante: {
+                            s.student
+                            ?
+                            s.student.name
+                            :
+                            "[Eliminado]"
+                          }
                         </div>
                         <div className="text-sm text-neutral-400">
                           Fecha: {fecha}

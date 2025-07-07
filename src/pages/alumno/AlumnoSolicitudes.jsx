@@ -82,6 +82,8 @@ export default function AlumnoSolicitudes() {
               <h2 className="text-xl font-semibold mb-2">Pendientes</h2>
               <div className="flex flex-col gap-4 mb-6">
                 {pendientes.map((s) => {
+                  if (!s.private_lesson) return <></>
+                  if (!s.private_lesson.tutor) return <></>;
                   const startDate = new Date(s.start_time);
                   const endDate = new Date(s.end_time);
                   const fecha = formatFecha(startDate);
@@ -149,6 +151,8 @@ export default function AlumnoSolicitudes() {
               <h2 className="text-xl font-semibold">Aceptadas</h2>
               <div className="flex flex-col gap-4">
                 {aceptadas.map((s) => {
+                  if (!s.private_lesson) return <></>
+                  if (!s.private_lesson.tutor) return <></>;
                   const startDate = new Date(s.start_time);
                   const endDate = new Date(s.end_time);
                   const fecha = formatFecha(startDate);
@@ -237,7 +241,13 @@ export default function AlumnoSolicitudes() {
                           Clase: {s.private_lesson.course.name}
                         </div>
                         <div className="text-sm text-neutral-400">
-                          Tutor: {s.private_lesson.tutor.name}
+                          Tutor: {
+                            s.private_lesson.tutor
+                            ?
+                            s.private_lesson.tutor.name
+                            :
+                            "[Eliminado]"
+                          }
                         </div>
                         <div className="text-sm text-neutral-400">
                           Fecha: {fecha}
@@ -253,15 +263,17 @@ export default function AlumnoSolicitudes() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end space-y-2">
-                        <button
-                          onClick={() =>
-                            navigate(`/perfil/${s.private_lesson.tutor.id}`)
-                          }
-                          className="text-violet-400 hover:text-violet-600 text-sm underline"
-                          type="button"
-                        >
-                          Ver perfil tutor
-                        </button>
+                        {s.private_lesson && s.private_lesson.tutor &&
+                          <button
+                            onClick={() =>
+                              navigate(`/perfil/${s.private_lesson.tutor.id}`)
+                            }
+                            className="text-violet-400 hover:text-violet-600 text-sm underline"
+                            type="button"
+                          >
+                            Ver perfil tutor
+                          </button>
+                        }
                       </div>
                     </div>
                   );
