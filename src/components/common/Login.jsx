@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function AlumnoLogin() {
+export default function Login() {
+  const { role } = useParams();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({
     name: "",
     email: "",
+    number: "",
     password: "",
-    role: "student",
+    role: role === "tutor" ? "tutor" : "student",
   });
   const [message, setMessage] = useState(null);
 
@@ -24,32 +26,48 @@ export default function AlumnoLogin() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleLogin = async (email, password) => {
+    const res = await api.post("/login", { email, password });
+    const token = res.data.access_token;
+    const role = res.data.user.role;
+
+    if (!token) throw new Error("No se recibió token");
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+    localStorage.setItem("role", role);
+
+    setMessage("✅ Ingreso exitoso.");
+    if (role === "tutor") {
+      navigate("/dashboard/tutor");
+    } else if (role === "student") {
+      navigate("/dashboard/alumno");
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleRegister = async (form) => {
+    await api.post("/register", form);
+    await handleLogin(form.email, form.password);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
+
     try {
-      const endpoint = isLogin ? "/login" : "/register";
-      const payload = isLogin
-        ? { email: form.email, password: form.password }
-        : form;
-
-      const res = await api.post(endpoint, payload);
-      const token = res.data.access_token;
-
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-      }
-
-      setMessage(`✅ ${isLogin ? "Ingreso" : "Registro"} exitoso`);
       if (isLogin) {
-        navigate("/dashboard/alumno");
+        await handleLogin(form.email, form.password);
+      } else {
+        await handleRegister(form);
       }
     } catch (err) {
-      const detail = err.response?.data?.detail || "Error inesperado";
-      setMessage(
-        `❌ ${typeof detail === "string" ? detail : JSON.stringify(detail)}`
-      );
+      if (err.response?.status === 401) {
+        setMessage("❌ Correo o contraseña incorrectos.");
+      } else {
+        setMessage("❌ Error inesperado. Intente nuevamente.");
+      }
     }
   };
 
@@ -60,7 +78,7 @@ export default function AlumnoLogin() {
         className="bg-neutral-800 p-6 rounded-xl flex flex-col gap-4 w-full max-w-sm"
       >
         <h2 className="text-xl font-semibold text-center mb-2">
-          {isLogin ? "Ingreso Alumno" : "Registro Alumno"}
+          {isLogin ? "Ingreso" : "Registro"}
         </h2>
 
         {!isLogin && (
@@ -95,7 +113,7 @@ export default function AlumnoLogin() {
           required
         />
 
-        {!isLogin && <input type="hidden" name="role" value="student" />}
+        {!isLogin && <input type="hidden" name="role" value={role} />}
 
         <button
           type="submit"

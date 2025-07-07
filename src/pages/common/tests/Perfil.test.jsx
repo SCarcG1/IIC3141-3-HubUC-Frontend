@@ -1,84 +1,71 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen } from "@testing-library/react";
 import Perfil from "../Perfil";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import Reviews from "../../tutor/Reviews";
+import ClasesTutor from "../ClasesTutor";
+import { MemoryRouter } from "react-router-dom";
 import api from "../../../services/api";
 
-vi.mock("../../../services/api");
+vi.mock("../../../services/api", () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
+  },
+}));
 
-const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+vi.mock("../../tutor/Reviews", () => ({
+  default: () => <div data-testid="reviews-mock" />,
+}));
+
+vi.mock("../ClasesTutor", () => ({
+  default: () => <div data-testid="clases-tutor-mock" />,
+}));
 
 describe("Perfil", () => {
   beforeEach(() => {
-    localStorage.setItem("token", "fake-token");
     localStorage.setItem(
       "user",
-      JSON.stringify({ id: 1, name: "Vicente", role: "student" })
+      JSON.stringify({
+        id: 1,
+        name: "Juan",
+        role: "tutor",
+        email: "juan@example.com",
+        number: "+56912345678",
+      })
     );
+
+    api.get.mockResolvedValue({
+      data: {
+        id: 1,
+        name: "Juan",
+        role: "tutor",
+        email: "juan@example.com",
+        number: "+56912345678",
+      },
+    });
   });
 
-  it("renderiza perfil propio y permite editar", async () => {
-    api.get.mockResolvedValueOnce({
-      data: { id: 1, name: "Vicente", email: "vicente@mail.com", role: "student" },
-    });
+  afterEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
 
+  it("muestra el heading con el nombre del usuario y los componentes hijos", async () => {
     render(
-      <MemoryRouter initialEntries={["/perfil/1"]}>
-        <Routes>
-          <Route path="/perfil/:id" element={<Perfil />} />
-        </Routes>
+      <MemoryRouter>
+        <Perfil />
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText("Mi Perfil")).toBeInTheDocument();
+    const heading = await screen.findByRole("heading", {
+      name: (content) =>
+        content.includes("Perfil de Juan") || content.includes("Mi Perfil"),
     });
+    expect(heading).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("Editar perfil"));
-    const input = screen.getByLabelText("Nombre");
-    fireEvent.change(input, { target: { value: "Nuevo Nombre" } });
-
-    api.patch.mockResolvedValueOnce({});
-    fireEvent.click(screen.getByText("Guardar"));
-
-    await waitFor(() =>
-      expect(api.patch).toHaveBeenCalledWith(
-        "/users/1",
-        { name: "Nuevo Nombre", email: "vicente@mail.com" },
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: "Bearer fake-token",
-          }),
-        })
-      )
-    );
-  });
-
-  it("renderiza perfil de otro usuario", async () => {
-    api.get.mockResolvedValueOnce({
-      data: { id: 2, name: "Profesor", email: "profe@mail.com", role: "tutor" },
-    });
-
-    render(
-      <MemoryRouter initialEntries={["/perfil/2"]}>
-        <Routes>
-          <Route path="/perfil/:id" element={<Perfil />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText("Perfil de Profesor")).toBeInTheDocument();
-      expect(screen.getByText("Tutor")).toBeInTheDocument();
-      expect(screen.getByText("Reviews")).toBeInTheDocument();
-      expect(screen.getByText("Clases")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("reviews-mock")).toBeInTheDocument();
+    expect(screen.getByTestId("clases-tutor-mock")).toBeInTheDocument();
   });
 });

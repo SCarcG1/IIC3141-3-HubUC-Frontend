@@ -2,7 +2,6 @@ import { describe, it, vi, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 
-// Mock de navigate
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -12,22 +11,25 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-// Mock de API
-const mockGet = vi.fn();
-const mockPut = vi.fn();
-vi.mock("../../../services/api", () => ({
-  default: {
-    get: mockGet,
-    put: mockPut,
-  },
-}));
+vi.mock("../../../services/api", () => {
+  return {
+    __esModule: true,
+    default: {
+      get: vi.fn(),
+      post: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn(),
+    },
+  };
+});
 
-// Setup común
+import api from "../../../services/api";
+
 beforeEach(() => {
   mockNavigate.mockReset();
-  mockGet.mockReset();
-  mockPut.mockReset();
+  vi.clearAllMocks();
   localStorage.setItem("token", "mock-token");
+  localStorage.setItem("role", "tutor");
 });
 
 describe("ClasesTutor", () => {
@@ -42,53 +44,75 @@ describe("ClasesTutor", () => {
       },
       student: {
         name: "Juan Pérez",
+        id: 42,
       },
+      private_lesson_id: 123,
+      student_id: 42,
     },
   ];
 
   it("muestra correctamente una solicitud pendiente", async () => {
-    mockGet.mockResolvedValueOnce({ data: mockData });
+    api.get.mockResolvedValueOnce({ data: mockData });
     const { default: ClasesTutor } = await import("../ClasesTutor");
     render(<ClasesTutor />);
 
     await waitFor(() => {
       expect(screen.getByText("Clase: Álgebra Lineal")).toBeInTheDocument();
-      expect(screen.getByText("Nombre Estudiante: Juan Pérez")).toBeInTheDocument();
+      expect(
+        screen.getByText("Nombre Estudiante: Juan Pérez")
+      ).toBeInTheDocument();
       expect(screen.getByText("Estado: Pendiente")).toBeInTheDocument();
     });
   });
 
   it("permite aceptar una solicitud", async () => {
-    mockGet.mockResolvedValueOnce({ data: mockData });
+    api.get.mockResolvedValueOnce({ data: mockData });
+    api.patch.mockResolvedValueOnce({}); // patch para aceptar
+    api.patch.mockResolvedValue({}); // patch para posibles rechazos posteriores
+
     const { default: ClasesTutor } = await import("../ClasesTutor");
     render(<ClasesTutor />);
 
     const aceptarBtn = await screen.findByText("Aceptar");
     fireEvent.click(aceptarBtn);
 
-    await waitFor(() =>
-      expect(mockPut).toHaveBeenCalledWith(
-        "/reservations/5",
-        { status: "accepted" },
-        { headers: { Authorization: "Bearer mock-token" } }
-      )
-    );
+    await waitFor(() => {
+      expect(api.patch).toHaveBeenCalledWith(
+        `/reservations/tutor/5`,
+        {
+          private_lesson_id: 123,
+          student_id: 42,
+          status: "accepted",
+        },
+        {
+          headers: { Authorization: "Bearer mock-token" },
+        }
+      );
+    });
   });
 
   it("permite rechazar una solicitud", async () => {
-    mockGet.mockResolvedValueOnce({ data: mockData });
+    api.get.mockResolvedValueOnce({ data: mockData });
+    api.patch.mockResolvedValueOnce({}); // patch para rechazar
+
     const { default: ClasesTutor } = await import("../ClasesTutor");
     render(<ClasesTutor />);
 
     const rechazarBtn = await screen.findByText("Rechazar");
     fireEvent.click(rechazarBtn);
 
-    await waitFor(() =>
-      expect(mockPut).toHaveBeenCalledWith(
-        "/reservations/5",
-        { status: "rejected" },
-        { headers: { Authorization: "Bearer mock-token" } }
-      )
-    );
+    await waitFor(() => {
+      expect(api.patch).toHaveBeenCalledWith(
+        `/reservations/tutor/5`,
+        {
+          private_lesson_id: 123,
+          student_id: 42,
+          status: "rejected",
+        },
+        {
+          headers: { Authorization: "Bearer mock-token" },
+        }
+      );
+    });
   });
 });

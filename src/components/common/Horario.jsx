@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../../services/api";
+import { Link } from "react-router-dom";
 
-export default function Horario() {
+export default function Horario({ user }) {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [infoClase, setInfoClase] = useState(null);
   const [clases, setClases] = useState([]);
@@ -16,11 +17,26 @@ export default function Horario() {
     setInfoClase(null);
   };
 
-  const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  const dias = [
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+    "Domingo",
+  ];
   const horas = [
-    "08:20", "09:40", "11:00", "12:20",
-    "13:30", "14:50", "16:10", "17:30",
-    "18:50", "20:10",
+    "08:20",
+    "09:40",
+    "11:00",
+    "12:20",
+    "13:30",
+    "14:50",
+    "16:10",
+    "17:30",
+    "18:50",
+    "20:10",
   ];
 
   const bloquesPorSlot = {};
@@ -45,8 +61,12 @@ export default function Horario() {
 
     const start = new Date(r.start_time);
     const end = new Date(r.end_time);
-    const localStart = new Date(start.toLocaleString("en-US", { timeZone: "America/Santiago" }));
-    const localEnd = new Date(end.toLocaleString("en-US", { timeZone: "America/Santiago" }));
+    const localStart = new Date(
+      start.toLocaleString("en-US", { timeZone: "America/Santiago" })
+    );
+    const localEnd = new Date(
+      end.toLocaleString("en-US", { timeZone: "America/Santiago" })
+    );
 
     if (localStart < monday || localStart > sunday) return;
 
@@ -60,7 +80,8 @@ export default function Horario() {
       }
     }
 
-    const diaSemana = dias[localStart.getDay() === 0 ? 6 : localStart.getDay() - 1];
+    const diaSemana =
+      dias[localStart.getDay() === 0 ? 6 : localStart.getDay() - 1];
     const key = `${diaSemana}-${slot}`;
 
     if (!bloquesPorSlot[key]) bloquesPorSlot[key] = [];
@@ -73,8 +94,8 @@ export default function Horario() {
       horaInicio: slot,
       duracion,
       titulo: r.private_lesson?.course?.name || "Clase",
-      tutor: r.private_lesson?.tutor?.name || "N/A",
-      estudiante: r.student?.name || "N/A",
+      tutor: r.private_lesson?.tutor || "N/A",
+      estudiante: r.student || "N/A",
     });
   });
 
@@ -106,9 +127,14 @@ export default function Horario() {
       <table className="w-full table-fixed text-sm border-collapse">
         <thead>
           <tr>
-            <th className="border border-neutral-700 p-2 w-24 bg-neutral-900">Hora</th>
+            <th className="border border-neutral-700 p-2 w-24 bg-neutral-900">
+              Hora
+            </th>
             {dias.map((dia) => (
-              <th key={dia} className="border border-neutral-700 p-2 w-32 bg-neutral-900">
+              <th
+                key={dia}
+                className="border border-neutral-700 p-2 w-32 bg-neutral-900"
+              >
                 {dia}
               </th>
             ))}
@@ -158,9 +184,32 @@ export default function Horario() {
             <h2 className="text-xl font-bold mb-4">{infoClase?.titulo}</h2>
             <p>Hora: {infoClase?.horaInicio}</p>
             <p>Día: {infoClase?.dia}</p>
-            <p>Duración: {infoClase?.duracion} bloque(s) de 1h20</p>
-            <p>Tutor: {infoClase?.tutor}</p>
-            <p>Estudiante: {infoClase?.estudiante}</p>
+            <p>Duración: {infoClase?.duracion} bloque(s) de 1h20min</p>
+            <p>
+              Tutor:{" "}
+              {user.id === infoClase?.tutor?.id ? (
+                infoClase?.tutor?.name
+              ) : (
+                <Link
+                  to={`/perfil/${infoClase?.tutor?.id}`}
+                  className="text-violet-400 hover:text-violet-600 text-sm underline"
+                >
+                  {infoClase?.tutor?.name}
+                </Link>
+              )}
+              <br />
+              Estudiante:{" "}
+              {user.id === infoClase?.estudiante?.id ? (
+                infoClase?.estudiante?.name
+              ) : (
+                <Link
+                  to={`/perfil/${infoClase?.estudiante?.id}`}
+                  className="text-violet-400 hover:text-violet-600 text-sm underline"
+                >
+                  {infoClase?.estudiante?.name}
+                </Link>
+              )}
+            </p>
 
             <button
               onClick={cerrarModal}
