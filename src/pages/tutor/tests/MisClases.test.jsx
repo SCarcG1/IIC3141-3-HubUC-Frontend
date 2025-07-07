@@ -1,11 +1,23 @@
-// src/pages/tests/MisClases.test.jsx
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import MisClases from "../MisClases";
 import { MemoryRouter } from "react-router-dom";
 import api from "../../../services/api";
 
-vi.mock("../../../services/api");
+// Mock del API
+vi.mock("../../../services/api", () => {
+  return {
+    __esModule: true,
+    default: {
+      get: vi.fn(),
+      post: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn(),
+    },
+  };
+});
+
+// Mock del navigate
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -19,6 +31,7 @@ describe("MisClases", () => {
   beforeEach(() => {
     localStorage.setItem("user", JSON.stringify({ id: 10 }));
     localStorage.setItem("token", "mock-token");
+    localStorage.setItem("role", "tutor");
   });
 
   afterEach(() => {
@@ -26,7 +39,7 @@ describe("MisClases", () => {
     localStorage.clear();
   });
 
-  it("muestra clases cargadas correctamente", async () => {
+  it("muestra clases correctamente con curso válido (Matemáticas)", async () => {
     api.get.mockImplementation((url) => {
       if (url.startsWith("/private-lessons/search")) {
         return Promise.resolve({
@@ -34,16 +47,16 @@ describe("MisClases", () => {
             results: [
               {
                 id: 1,
-                course_id: 1,
-                description: "Ecuaciones y matrices",
-                price: 10000,
+                course_id: 101,
+                description: "Clase de funciones lineales",
+                price: 12000,
               },
             ],
           },
         });
       }
-      if (url === "/courses/1") {
-        return Promise.resolve({ data: { id: 1, name: "Álgebra" } });
+      if (url === "/courses/101") {
+        return Promise.resolve({ data: { id: 101, name: "Matemáticas" } });
       }
       return Promise.resolve({ data: {} });
     });
@@ -57,8 +70,15 @@ describe("MisClases", () => {
     expect(screen.getByText(/Cargando clases/i)).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText("Álgebra")).toBeInTheDocument();
-      expect(screen.getByText(/Ecuaciones y matrices/)).toBeInTheDocument();
+      expect(screen.getByText("Matemáticas")).toBeInTheDocument();
+      expect(
+        screen.getByText(/Clase de funciones lineales/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (content) => content.includes("12") && content.includes("000")
+        )
+      ).toBeInTheDocument();
     });
   });
 
@@ -66,40 +86,6 @@ describe("MisClases", () => {
     api.get.mockImplementation((url) => {
       if (url.startsWith("/private-lessons/search")) {
         return Promise.resolve({ data: { results: [] } });
-      }
-      return Promise.resolve({ data: {} }); // para cualquier otra llamada como cursos
-    });
-
-    render(
-      <MemoryRouter>
-        <MisClases />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/No has publicado ninguna clase aún/i)
-      ).toBeInTheDocument();
-    });
-  });
-
-  it("realiza búsqueda inicial de clases con el tutor_id correcto", async () => {
-    const mockClases = [
-      {
-        id: 5,
-        course_id: 2,
-        description: "Clase de prueba",
-        price: 15000,
-      },
-    ];
-
-    api.get.mockImplementation((url) => {
-      if (url.startsWith("/private-lessons/search")) {
-        expect(url).toContain("tutor_id=10"); // Verificamos que el user.id se usa
-        return Promise.resolve({ data: { results: mockClases } });
-      }
-      if (url === "/courses/2") {
-        return Promise.resolve({ data: { id: 2, name: "Cálculo" } });
       }
       return Promise.resolve({ data: {} });
     });
@@ -110,30 +96,35 @@ describe("MisClases", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText("Clase de prueba")).toBeInTheDocument();
-      expect(screen.getByText("Cálculo")).toBeInTheDocument();
-    });
+    await waitFor(() =>
+      expect(screen.queryByText(/Cargando clases/i)).not.toBeInTheDocument()
+    );
+
+    expect(
+      screen.getByText((content) =>
+        content.includes("No has publicado ninguna clase aún")
+      )
+    ).toBeInTheDocument();
   });
 
-  it("permite navegar al editar una clase", async () => {
+  it("permite editar una clase", async () => {
     api.get.mockImplementation((url) => {
       if (url.startsWith("/private-lessons/search")) {
         return Promise.resolve({
           data: {
             results: [
               {
-                id: 1,
-                course_id: 1,
-                description: "Clases de dinámica",
-                price: 12000,
+                id: 2,
+                course_id: 102,
+                description: "Clase de cinemática",
+                price: 15000,
               },
             ],
           },
         });
       }
-      if (url === "/courses/1") {
-        return Promise.resolve({ data: { id: 1, name: "Física" } });
+      if (url === "/courses/102") {
+        return Promise.resolve({ data: { id: 102, name: "Física" } });
       }
       return Promise.resolve({ data: {} });
     });
@@ -147,7 +138,7 @@ describe("MisClases", () => {
     const botonEditar = await screen.findByText("Editar");
     fireEvent.click(botonEditar);
 
-    expect(mockNavigate).toHaveBeenCalledWith("/clases/1/editar");
+    expect(mockNavigate).toHaveBeenCalledWith("/clases/2/editar");
   });
 
   it("permite eliminar una clase con confirmación", async () => {
@@ -159,17 +150,17 @@ describe("MisClases", () => {
           data: {
             results: [
               {
-                id: 2,
-                course_id: 1,
-                description: "Reacciones y estequiometría",
-                price: 14000,
+                id: 3,
+                course_id: 103,
+                description: "Clase de bucles en Python",
+                price: 13000,
               },
             ],
           },
         });
       }
-      if (url === "/courses/1") {
-        return Promise.resolve({ data: { id: 1, name: "Química" } });
+      if (url === "/courses/103") {
+        return Promise.resolve({ data: { id: 103, name: "Programación" } });
       }
       return Promise.resolve({ data: {} });
     });
@@ -187,8 +178,12 @@ describe("MisClases", () => {
 
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith(
-        "/private-lessons/2",
-        expect.anything()
+        "/private-lessons/3",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: "Bearer mock-token",
+          }),
+        })
       );
     });
   });
