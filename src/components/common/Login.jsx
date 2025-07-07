@@ -15,6 +15,7 @@ export default function Login() {
     role: role === "tutor" ? "tutor" : "student",
   });
   const [message, setMessage] = useState(null);
+  const [numberError, setNumberError] = useState("");
 
   const handleToggle = () => {
     setIsLogin(!isLogin);
@@ -23,7 +24,19 @@ export default function Login() {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "number") {
+      const cleaned = value.trim();
+      if (cleaned && !/^\+569\d{8}$/.test(cleaned)) {
+        setNumberError(
+          "El número debe comenzar con +569 y tener 12 caracteres en total."
+        );
+      } else {
+        setNumberError("");
+      }
+    }
+    setForm({ ...form, [name]: value });
   };
 
   const handleLogin = async (email, password) => {
@@ -55,6 +68,11 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
+
+    if (!isLogin && numberError) {
+      setMessage("❌ Corrige el número de teléfono.");
+      return;
+    }
 
     try {
       if (isLogin) {
@@ -102,6 +120,22 @@ export default function Login() {
           className="p-2 rounded bg-neutral-900 text-white border border-neutral-600"
           required
         />
+
+        {!isLogin && (
+          <>
+            <input
+              type="text"
+              name="number"
+              className="bg-neutral-900 border border-neutral-600 rounded px-3 py-2 text-white w-full text-base"
+              value={form.number}
+              onChange={handleChange}
+              placeholder="Teléfono (Ej: +56912345678)"
+            />
+            {numberError && (
+              <p className="text-red-500 text-sm mt-1">{numberError}</p>
+            )}
+          </>
+        )}
 
         <input
           type="password"
